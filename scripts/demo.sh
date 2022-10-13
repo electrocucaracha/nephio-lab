@@ -15,6 +15,7 @@ if [[ ${DEBUG:-false} == "true" ]]; then
     set -o xtrace
 fi
 
+# shellcheck source=scripts/_common.sh
 source _common.sh
 
 trap get_status ERR

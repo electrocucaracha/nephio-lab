@@ -37,7 +37,7 @@ Vagrant.configure('2') do |config|
   config.vm.synced_folder './', '/vagrant'
 
   # Install dependencies
-  config.vm.provision 'shell', privileged: false, path: 'install.sh', reset: true
+  config.vm.provision 'shell', privileged: false, path: './scripts/install.sh', reset: true
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
       NUM_EDGE_CLUSTERS: ENV['NUM_EDGE_CLUSTERS'] || 3,
@@ -50,7 +50,7 @@ Vagrant.configure('2') do |config|
 
       for var in $(printenv | grep GITHUB_); do echo "export $var" | sudo tee --append /etc/environment ; done
 
-      cd /vagrant/
+      cd /vagrant/scripts
       ./configure.sh | tee ~/configure.log
       ./deploy.sh | tee ~/deploy.log
     SHELL
@@ -66,9 +66,6 @@ Vagrant.configure('2') do |config|
   config.vm.provider 'virtualbox' do |v|
     v.gui = false
     v.customize ['modifyvm', :id, '--nictype1', 'virtio', '--cableconnected1', 'on']
-    # https://bugs.launchpad.net/cloud-images/+bug/1829625/comments/2
-    v.customize ['modifyvm', :id, '--uart1', '0x3F8', '4']
-    v.customize ['modifyvm', :id, '--uartmode1', 'file', File::NULL]
     # Enable nested paging for memory management in hardware
     v.customize ['modifyvm', :id, '--nestedpaging', 'on']
     # Use large pages to reduce Translation Lookaside Buffers usage

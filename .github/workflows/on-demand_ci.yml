@@ -42,10 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
+        working-directory: ./scripts
         run: ./install.sh
       - name: Configure infrastructure
+        working-directory: ./scripts
         run: ./configure.sh
       - name: Deploy Nephio services
         env:
           GITHUB_USERNAME: test
+        working-directory: ./scripts
         run: ./deploy.sh
