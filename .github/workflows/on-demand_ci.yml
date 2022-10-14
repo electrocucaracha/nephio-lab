@@ -13,8 +13,6 @@ name: Check End-to-End (On Demand)
 on:
   push:
     paths:
-      - '**.go'
-      - '**.yml'
       - '**.sh'
       - '!.github/*'
   pull_request_review:
@@ -22,8 +20,31 @@ on:
       - submitted
 
 jobs:
-  check-format:
+  changes:
+    runs-on: ubuntu-latest
+    if: >-
+      (
+        github.event_name == 'pull_request_review' &&
+        github.event.review.state == 'approved'
+      ) ||
+      github.event_name != 'pull_request_review'
+    outputs:
+      scripts: ${{ steps.filter.outputs.scripts }}
+      golang: ${{ steps.filter.outputs.golang }}
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: dorny/paths-filter@v2.11.1
+        if: ${{ !env.ACT }}
+        id: filter
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            scripts:
+              - '**.sh'
+  check-scripts-format:
     name: Check scripts format
+    if: needs.changes.outputs.scripts == 'true'
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
@@ -34,8 +55,9 @@ jobs:
           SHFMT_OPTS: -i 4 -s
         with:
           sh_checker_shellcheck_disable: true
-  system-test:
-    name: Check system tests
+  functional-test:
+    name: Check functional tests
+    needs: check-scripts-format
     runs-on: ubuntu-20.04
     env:
       DEBUG: true
