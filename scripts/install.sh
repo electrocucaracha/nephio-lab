@@ -46,7 +46,7 @@ fi
 
 # Install dependencies
 # NOTE: Shorten link -> https://github.com/electrocucaracha/pkg-mgr_scripts
-curl -fsSL http://bit.ly/install_pkg | PKG_COMMANDS_LIST="pip,docker,kind,kubectl" bash
+curl -fsSL http://bit.ly/install_pkg | PKG_COMMANDS_LIST="pip,docker,kubectl" PKG="go-lang" bash
 
 if ! command -v kpt; then
     curl -s "https://i.jpillora.com/GoogleContainerTools/kpt@v$(get_github_latest_tag GoogleContainerTools/kpt)!!" | bash

@@ -20,22 +20,17 @@ source _common.sh
 
 trap get_status ERR
 
-kube_version=$(curl -sL https://registry.hub.docker.com/v2/repositories/kindest/node/tags | python -c 'import json,sys,re;versions=[obj["name"][1:] for obj in json.load(sys.stdin)["results"] if re.match("^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$",obj["name"])];print("\n".join(versions))' | uniq | sort -rn | head -n 1)
-
-function deploy_k8s_cluster {
-    local name="$1"
-
-    if ! kind get clusters | grep -q "$name"; then
-        kind create cluster --name "$name" --image "kindest/node:v$kube_version"
-    fi
-}
-
-# Create Nephio cluster
-deploy_k8s_cluster nephio
-# Creating workload clusters
-for i in $(seq 0 "${NUM_EDGE_CLUSTERS:-3}"); do
-    deploy_k8s_cluster "edge-cluster$i"
-done
+if [ -z "$(sudo docker images wanem:0.0.1 -q)" ]; then
+    sudo docker build -t wanem:0.0.1 .
+fi
+if [ ! -f "$HOME/go/bin/multicluster" ]; then
+    pushd ../ >/dev/null
+    go install ./...
+    popd >/dev/null
+fi
+sudo -E "$HOME/go/bin/multicluster" create --config ./config.yml --name nephio
+mkdir -p "$HOME/.kube"
+sudo chown -R "$USER" "$HOME/.kube/"
 
 # Wait for node readiness
 for context in $(kubectl config get-contexts --no-headers --output name); do

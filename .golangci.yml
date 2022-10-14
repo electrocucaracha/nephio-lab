@@ -1,0 +1,28 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2022
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+linters:
+  enable-all: true
+  disable:
+    - interfacer  # Deprecated (since v1.38.0) due to: The repository of the linter has been archived by the owner.
+    - golint  # Deprecated (since v1.41.0) due to: The repository of the linter has been archived by the owner.  Replaced by revive.
+    - scopelint  # Deprecated (since v1.39.0) due to: The repository of the linter has been deprecated by the owner.  Replaced by exportloopref.
+    - maligned  # Deprecated (since v1.38.0) due to: The repository of the linter has been archived by the owner.  Replaced by govet 'fieldalignment'.
+    - exhaustivestruct  # Deprecated (since v1.46.0) due to: The owner seems to have abandoned the linter.  Replaced by exhaustruct.
+    - nosnakecase  # Deprecated (since v1.48.1) due to: The repository of the linter has been deprecated by the owner.  Replaced by revive(var-naming).
+    - ifshort  # Deprecated (since v1.48.0) due to: The repository of the linter has been deprecated by the owner.
+    - deadcode  # Deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter.  Replaced by unused.
+    - varcheck  # Deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter.  Replaced by unused.
+    - structcheck  # Deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter.  Replaced by unused.
+    - rowserrcheck  # Disabled because of generics. You can track the evolution of the generics support by following the https://github.com/golangci/golangci-lint/issues/2649.
+    - sqlclosecheck  # Disabled because of generics. You can track the evolution of the generics support by following the https://github.com/golangci/golangci-lint/issues/2649.
+    - structcheck  # Disabled because of generics. You can track the evolution of the generics support by following the https://github.com/golangci/golangci-lint/issues/2649.
+    - wastedassign  # Disabled because of generics. You can track the evolution of the generics support by following the https://github.com/golangci/golangci-lint/issues/2649.
+    - exhaustruct

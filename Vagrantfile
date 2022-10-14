@@ -40,7 +40,7 @@ Vagrant.configure('2') do |config|
   config.vm.provision 'shell', privileged: false, path: './scripts/install.sh', reset: true
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
-      NUM_EDGE_CLUSTERS: ENV['NUM_EDGE_CLUSTERS'] || 3,
+      DEBUG: ENV.fetch('DEBUG', true),
       GITHUB_USERNAME: ENV['GITHUB_USERNAME'],
       GITHUB_TOKEN: ENV['GITHUB_TOKEN']
     }
