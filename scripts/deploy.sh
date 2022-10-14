@@ -40,10 +40,6 @@ sudo mkdir -p "$base_path"
 
 # Install server components
 get_pkg system
-kpt fn render "$system_path"
-kpt live init "$system_path"
-kubectl config use-context kind-nephio
-kpt live apply "$system_path" --reconcile-timeout=15m --output=table
 
 # Installing Config Sync in Workload Clusters
 get_pkg configsync
@@ -53,9 +49,15 @@ kpt fn eval "$configsys_path" \
     --image gcr.io/kpt-fn/search-replace:v0.2.0 \
     -- by-path=spec.git.repo by-value-regex='https://github.com/[a-zA-Z0-9-]+/(.*)' \
     put-value="https://github.com/${GITHUB_USERNAME}/\${1}"
-kpt fn render "$configsys_path"
-kpt live init "$configsys_path"
-for i in $(seq 0 "${NUM_EDGE_CLUSTERS:-3}"); do
-    kubectl config use-context "kind-edge-cluster$i"
-    kpt live apply "$configsys_path" --reconcile-timeout=15m --output=table
+
+for path in "$system_path" "$configsys_path"; do
+    kpt fn render "$path"
+    kpt live init "$path" --force
+done
+
+for context in $(kubectl config get-contexts --no-headers --output name); do
+    kubectl config use-context "$context"
+    path="$system_path"
+    [[ $context == *"edge"* ]] && path="$configsys_path"
+    kpt live apply "$path" --reconcile-timeout=15m
 done
