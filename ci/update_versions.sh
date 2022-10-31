@@ -14,6 +14,7 @@ set -o nounset
 
 if ! command -v go >/dev/null; then
     curl -fsSL http://bit.ly/install_pkg | PKG=go-lang bash
+    # shellcheck disable=SC1091
     source /etc/profile.d/path.sh
 fi
 
