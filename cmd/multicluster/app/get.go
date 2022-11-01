@@ -23,18 +23,18 @@ import (
 	"sigs.k8s.io/kind/pkg/cluster"
 )
 
-func newGetCommand() *cobra.Command {
+func NewGetCommand(provider multicluster.DataSource) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "Get the clusters that belong to the multi cluster",
 		Long:  `Get the clusters that belong to the multi cluster`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name, err := cmd.Flags().GetString("name")
+			name, err := getName(cmd.Flags())
 			if err != nil {
-				return ErrGetName
+				return errors.Wrap(err, "failed to retrieve the name of the multi-cluster")
 			}
 
-			if err := multicluster.Get(name); err != nil {
+			if err := provider.Get(name); err != nil {
 				return errors.Wrapf(err, "failed to retrieve %s multi-cluster info", name)
 			}
 
@@ -45,7 +45,7 @@ func newGetCommand() *cobra.Command {
 	cmd.Flags().String(
 		"name",
 		cluster.DefaultName,
-		"the multicluster context name",
+		"the multi-cluster context name",
 	)
 
 	return cmd

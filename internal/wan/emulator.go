@@ -23,11 +23,26 @@ import (
 
 const dockerWanImage = "wanem:0.0.1"
 
-func GetContainerName(name string) string {
+type WanProvider interface {
+	Create(string) (string, error)
+	AddRoutes(string, string, ...string) error
+	Delete(string) error
+}
+
+type Provider struct{}
+
+var _ WanProvider = (*Provider)(nil)
+
+func NewProvider() *Provider {
+	return new(Provider)
+}
+
+func getContainerName(name string) string {
 	return "wan-" + name
 }
 
-func Create(containerName string) error {
+func (p Provider) Create(name string) (string, error) {
+	containerName := getContainerName(name)
 	args := []string{
 		"run",
 		"-d", // run in the background
@@ -39,7 +54,7 @@ func Create(containerName string) error {
 	}
 
 	if err := exec.Command("docker", args...).Run(); err != nil {
-		return errors.Wrapf(err, "failed to create %s wan emulator", containerName)
+		return "", errors.Wrapf(err, "failed to create %s wan emulator", containerName)
 	}
 	// configure masquerading so clusters can reach internet
 	args = []string{
@@ -48,13 +63,13 @@ func Create(containerName string) error {
 	}
 
 	if err := exec.Command("docker", args...).Run(); err != nil {
-		return errors.Wrapf(err, "failed to configure masquerading in %s wan emulator ", containerName)
+		return "", errors.Wrapf(err, "failed to configure masquerading in %s wan emulator ", containerName)
 	}
 
-	return nil
+	return containerName, nil
 }
 
-func AddRoutes(containerName, gateway string, subnets ...string) error {
+func (p Provider) AddRoutes(containerName, gateway string, subnets ...string) error {
 	for _, subnet := range subnets {
 		args := []string{
 			"exec", containerName,
@@ -69,7 +84,8 @@ func AddRoutes(containerName, gateway string, subnets ...string) error {
 	return nil
 }
 
-func Delete(containerName string) error {
+func (p Provider) Delete(name string) error {
+	containerName := getContainerName(name)
 	if err := exec.Command("docker", "rm", "-f", containerName).Run(); err != nil {
 		return errors.Wrapf(err, "failed to delete %s wan emulator", containerName)
 	}

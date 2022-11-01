@@ -9,6 +9,9 @@
 
 DOCKER_CMD ?= $(shell which docker 2> /dev/null || which podman 2> /dev/null || echo docker)
 
+test:
+	@go test -v ./...
+
 .PHONY: lint
 lint:
 	sudo -E $(DOCKER_CMD) run --rm -v $$(pwd):/tmp/lint \
@@ -20,5 +23,6 @@ lint:
 
 .PHONY: fmt
 fmt:
+	@go fmt ./...
 	sudo -E $(DOCKER_CMD) run --rm -u "$$(id -u):$$(id -g)" \
 	-v "$$(pwd):/mnt" -w /mnt mvdan/shfmt -l -w -i 4 -s .

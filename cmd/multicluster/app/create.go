@@ -17,39 +17,13 @@ limitations under the License.
 package app
 
 import (
-	"os"
-
 	"github.com/electrocucaracha/nephio-lab/internal/multicluster"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 	"sigs.k8s.io/kind/pkg/cluster"
 )
 
-// NewConfig returns a new decoded Config struct.
-func NewConfig(configPath string) (*multicluster.Config, error) {
-	// Create config structure
-	config := &multicluster.Config{}
-
-	// Open config file
-	file, err := os.Open(configPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open multi-cluster configuration file")
-	}
-	defer file.Close()
-
-	// Init new YAML decode
-	d := yaml.NewDecoder(file)
-
-	// Start YAML decoding from file
-	if err := d.Decode(&config); err != nil {
-		return nil, errors.Wrap(err, "failed to decode multi-cluster configuration file")
-	}
-
-	return config, nil
-}
-
-func newCreateCommand() *cobra.Command {
+func NewCreateCommand(provider multicluster.DataSource) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create a deployment with multiple KIND clusters",
@@ -59,20 +33,17 @@ passed as parameters.
 Multicluster deployment create KIND clusters in independent bridges, that are connected
 through an special container that handles the routing and the WAN emulation.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name, err := cmd.Flags().GetString("name")
+			name, err := getName(cmd.Flags())
 			if err != nil {
-				return ErrGetName
-			}
-			configPath, err := cmd.Flags().GetString("config")
-			if err != nil {
-				return ErrGetConfig
-			}
-			cfg, err := NewConfig(configPath)
-			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to retrieve the name of the multi-cluster")
 			}
 
-			if err := multicluster.Create(cfg.Clusters, name); err != nil {
+			configPath, err := getConfigPath(cmd.Flags())
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve the configuration file path of the multi-cluster")
+			}
+
+			if err := provider.Create(name, configPath); err != nil {
 				return errors.Wrapf(err, "failed to create %s multi-cluster", name)
 			}
 

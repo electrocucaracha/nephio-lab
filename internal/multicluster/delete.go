@@ -18,44 +18,38 @@ package multicluster
 import (
 	"strings"
 
-	"github.com/aojea/kind-networking-plugins/pkg/docker"
-	wanem "github.com/electrocucaracha/nephio-lab/internal/wan"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/kind/pkg/cluster"
-	kindcmd "sigs.k8s.io/kind/pkg/cmd"
-	"sigs.k8s.io/kind/pkg/log"
 )
 
-func Delete(clustersCfg map[string]ClusterConfig, name string) error {
-	logger := kindcmd.NewLogger()
-	provider := cluster.NewProvider(
-		cluster.ProviderWithLogger(logger),
-	)
-
-	wanName := wanem.GetContainerName(name)
-	if err := wanem.Delete(wanName); err != nil {
-		return errors.Wrapf(err, "failed to delete %s wan emulator", wanName)
+func (p KindDataSource) Delete(name, configPath string) error {
+	clustersInfo, err := p.configReader.GetClustersInfo(configPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to get clusters information")
 	}
 
-	clusters, err := provider.List()
+	if err := p.wanProvider.Delete(name); err != nil {
+		return errors.Wrapf(err, "failed to delete %s wan emulator", name)
+	}
+
+	clusters, err := p.clusterProvider.List()
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve the kind clusters")
 	}
 
-	for clusterName := range clustersCfg {
+	for clusterName := range *clustersInfo {
 		for _, cluster := range clusters {
 			if strings.Contains(cluster, clusterName) {
-				if err = provider.Delete(cluster, ""); err != nil {
-					logger.V(0).Infof("%s\n", errors.Wrapf(err, "failed to delete cluster %q", cluster))
+				if err = p.clusterProvider.Delete(cluster, ""); err != nil {
+					p.logger.V(0).Infof("%s\n", errors.Wrapf(err, "failed to delete cluster %q", cluster))
 
 					continue
 				}
 
-				logger.V(0).Infof("Deleted clusters: %q", cluster)
+				p.logger.V(0).Infof("Deleted clusters: %q", cluster)
 			}
 		}
 
-		if err := deleteNetwork(clusterName, logger); err != nil {
+		if err := p.deleteNetwork(clusterName); err != nil {
 			return errors.Wrap(err, "failed to delete cluster network")
 		}
 	}
@@ -63,16 +57,16 @@ func Delete(clustersCfg map[string]ClusterConfig, name string) error {
 	return nil
 }
 
-func deleteNetwork(clusterName string, logger log.Logger) error {
-	networks, err := docker.ListNetwork()
+func (p KindDataSource) deleteNetwork(clusterName string) error {
+	networks, err := p.dockerProvider.ListNetwork()
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve docker network list")
 	}
 
 	for _, network := range networks {
 		if strings.Contains(network, clusterName) {
-			if err = docker.DeleteNetwork(network); err != nil {
-				logger.V(0).Infof("%s\n", errors.Wrapf(err, "failed to delete network %q", network))
+			if err = p.dockerProvider.DeleteNetwork(network); err != nil {
+				p.logger.V(0).Infof("%s\n", errors.Wrapf(err, "failed to delete network %q", network))
 
 				continue
 			}

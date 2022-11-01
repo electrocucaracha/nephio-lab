@@ -17,43 +17,27 @@ limitations under the License.
 package multicluster
 
 import (
+	"net"
 	"os"
 
-	"github.com/aojea/kind-networking-plugins/pkg/docker"
-	"github.com/aojea/kind-networking-plugins/pkg/network"
-	wanem "github.com/electrocucaracha/nephio-lab/internal/wan"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 	"sigs.k8s.io/kind/pkg/cluster"
-	kindcmd "sigs.k8s.io/kind/pkg/cmd"
 )
 
-// Config struct for multicluster config.
-type Config struct {
-	Clusters map[string]ClusterConfig `yaml:"clusters"`
-}
-
-type ClusterConfig struct {
-	Nodes         int    `yaml:"nodes"`
-	NodeSubnet    string `yaml:"nodeSubnet"`
-	PodSubnet     string `yaml:"podSubnet"`
-	ServiceSubnet string `yaml:"serviceSubnet"`
-}
-
-func Create(clustersCfg map[string]ClusterConfig, name string) error {
-	// create the container to emulate the WAN network
-	wanName := wanem.GetContainerName(name)
-
-	if err := wanem.Create(wanName); err != nil {
-		return errors.Wrapf(err, "failed to create %s wan container", wanName)
+func (p KindDataSource) Create(name, configPath string) error {
+	clustersInfo, err := p.configReader.GetClustersInfo(configPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to get clusters information")
 	}
 
-	logger := kindcmd.NewLogger()
-	provider := cluster.NewProvider(
-		cluster.ProviderWithLogger(logger),
-	)
+	// create the container to emulate the WAN network
+	wanName, err := p.wanProvider.Create(name)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create %s wan container", name)
+	}
 
-	for clusterName, clusterConfig := range clustersCfg {
+	for clusterName, clusterConfig := range *clustersInfo {
 		podSubnet := clusterConfig.PodSubnet
 		svcSubnet := clusterConfig.ServiceSubnet
 		config := &v1alpha4.Cluster{
@@ -66,20 +50,20 @@ func Create(clustersCfg map[string]ClusterConfig, name string) error {
 		}
 
 		// each cluster has its own docker network with the clustername
-		gateway, err := createNetwork(clusterConfig.NodeSubnet, clusterName, wanName)
+		gateway, err := p.createNetwork(clusterConfig.NodeSubnet, clusterName, wanName)
 		if err != nil {
 			return err
 		}
 
-		if err := createCluster(clusterName, config, provider); err != nil {
-			if err := deleteNetwork(clusterName, logger); err != nil {
+		if err := p.createCluster(clusterName, config); err != nil {
+			if err := p.deleteNetwork(clusterName); err != nil {
 				return errors.Wrap(err, "failed to delete network during the cluster creation")
 			}
 
 			return errors.Wrap(err, "failed to create cluster")
 		}
 
-		if err := connectCluster(clusterName, wanName, gateway, svcSubnet, podSubnet, provider); err != nil {
+		if err := p.connectCluster(clusterName, wanName, gateway, svcSubnet, podSubnet); err != nil {
 			return errors.Wrapf(err, "failed to connect cluster to %s network", wanName)
 		}
 	}
@@ -87,19 +71,25 @@ func Create(clustersCfg map[string]ClusterConfig, name string) error {
 	return nil
 }
 
-func connectCluster(clusterName, wanName, gateway, serviceSubnet, podSubnet string, provider *cluster.Provider) error {
+func (p KindDataSource) connectCluster(clusterName, wanName, gateway, serviceSubnet,
+	podSubnet string,
+) error {
 	// change the default network in all nodes
 	// to use the wanem container and provide
 	// connectivity between clusters
-	nodes, err := provider.ListNodes(clusterName)
+	nodes, err := p.clusterProvider.ListNodes(clusterName)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve cluster nodes")
 	}
 
 	for _, node := range nodes {
-		if err := docker.ReplaceGateway(node.String(), gateway); err != nil {
+		if err := p.dockerProvider.ReplaceGateway(node.String(), gateway); err != nil {
 			return errors.Wrapf(err, "failed to replace the gateway in %s node", node)
 		}
+	}
+
+	if len(nodes) == 0 {
+		return nil
 	}
 
 	// insert routes in wanem to reach services through one of the nodes
@@ -108,18 +98,18 @@ func connectCluster(clusterName, wanName, gateway, serviceSubnet, podSubnet stri
 		return errors.Wrapf(err, "failed to get IP address on %s", nodes[0])
 	}
 
-	if err := wanem.AddRoutes(wanName, ipv4, serviceSubnet, podSubnet); err != nil {
+	if err := p.wanProvider.AddRoutes(wanName, ipv4, serviceSubnet, podSubnet); err != nil {
 		return errors.Wrapf(err, "failed to add routes in %s wan emulator", wanName)
 	}
 
 	return nil
 }
 
-func createCluster(clusterName string, config *v1alpha4.Cluster, provider *cluster.Provider) error {
+func (p KindDataSource) createCluster(clusterName string, config *v1alpha4.Cluster) error {
 	// use the new created docker network
 	os.Setenv("KIND_EXPERIMENTAL_DOCKER_NETWORK", clusterName)
 	// create the cluster
-	if err := provider.Create(
+	if err := p.clusterProvider.Create(
 		clusterName,
 		cluster.CreateWithV1Alpha4Config(config),
 		cluster.CreateWithDisplayUsage(true),
@@ -150,22 +140,42 @@ func createNodes(numberNodes int) []v1alpha4.Node {
 	return nodes
 }
 
-func createNetwork(subnet, clusterName, wanName string) (string, error) {
+func (p KindDataSource) createNetwork(subnet, clusterName, wanName string) (string, error) {
 	// each cluster has its own docker network with the clustername
-	if err := docker.CreateNetwork(clusterName, subnet, false); err != nil {
+	if err := p.dockerProvider.CreateNetwork(clusterName, subnet, false); err != nil {
 		return "", errors.Wrapf(err, "failed to create the %s docker network", clusterName)
 	}
 
 	// connect wanem with the last IP of the range
 	// that the cluster will use later as gateway
-	gateway, err := network.GetLastIPSubnet(subnet)
+	gateway, err := getLastIPSubnet(subnet)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to get last IP Address from %s subnet", subnet)
 	}
 
-	if err := docker.ConnectNetwork(wanName, clusterName, gateway.String()); err != nil {
+	if err := p.dockerProvider.ConnectNetwork(wanName, clusterName, gateway.String()); err != nil {
 		return "", errors.Wrapf(err, "failed to connect %s to %s network", clusterName, wanName)
 	}
 
 	return gateway.String(), nil
+}
+
+func getLastIPSubnet(cidr string) (net.IP, error) {
+	_, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse %s CIDR", cidr)
+	}
+
+	ipAddress := ipnet.IP
+	mask := ipnet.Mask
+
+	// get the broadcast address
+	lastIP := net.IP(make([]byte, len(ipAddress)))
+	for i := range ipAddress {
+		lastIP[i] = ipAddress[i] | ^mask[i]
+	}
+	// get the previous IP
+	lastIP[len(ipAddress)-1]--
+
+	return lastIP, nil
 }

@@ -19,7 +19,11 @@ package app
 import (
 	"os"
 
+	"github.com/electrocucaracha/nephio-lab/internal/multicluster"
+	wanem "github.com/electrocucaracha/nephio-lab/internal/wan"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	kindcmd "sigs.k8s.io/kind/pkg/cmd"
 )
 
 func NewRootCommand() *cobra.Command {
@@ -32,9 +36,13 @@ func NewRootCommand() *cobra.Command {
 	`,
 	}
 
-	cmd.AddCommand(newCreateCommand())
-	cmd.AddCommand(newDeleteCommand())
-	cmd.AddCommand(newGetCommand())
+	logger := kindcmd.NewLogger()
+	provider := multicluster.NewProvider(multicluster.NewConfigReader(), wanem.NewProvider(),
+		multicluster.NewClusterProvider(logger), multicluster.NewDockerProvider(), logger)
+
+	cmd.AddCommand(NewCreateCommand(provider))
+	cmd.AddCommand(NewDeleteCommand(provider))
+	cmd.AddCommand(NewGetCommand(provider))
 
 	return cmd
 }
@@ -45,4 +53,24 @@ func Execute() {
 	if err := NewRootCommand().Execute(); err != nil {
 		os.Exit(1)
 	}
+}
+
+func getName(flags *pflag.FlagSet) (string, error) {
+	name, _ := flags.GetString("name")
+
+	if name == "" {
+		return "", ErrEmptyName
+	}
+
+	return name, nil
+}
+
+func getConfigPath(flags *pflag.FlagSet) (string, error) {
+	configPath, _ := flags.GetString("config")
+
+	if configPath == "" {
+		return "", ErrEmptyConfigPath
+	}
+
+	return configPath, nil
 }

@@ -14,14 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package app
+package multicluster
 
 import "errors"
 
-var (
-	// ErrEmptyName indicates that the multi-cluster name provided is empty.
-	ErrEmptyName = errors.New("empty multi-cluster name")
-
-	// ErrEmptyConfigPath indicates that the multi-cluster configuration path provided is empty.
-	ErrEmptyConfigPath = errors.New("empty multi-cluster configuration path")
-)
+// ErrUnsupportedIP indicates that IP address type is not supported yet.
+var ErrUnsupportedIP = errors.New("unsupported IP address")

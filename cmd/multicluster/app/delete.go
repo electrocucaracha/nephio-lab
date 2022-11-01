@@ -23,26 +23,23 @@ import (
 	"sigs.k8s.io/kind/pkg/cluster"
 )
 
-func newDeleteCommand() *cobra.Command {
+func NewDeleteCommand(provider multicluster.DataSource) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "Delete the specified multicluster",
 		Long:  `Delete the specified multicluster`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name, err := cmd.Flags().GetString("name")
+			name, err := getName(cmd.Flags())
 			if err != nil {
-				return ErrGetName
-			}
-			configPath, err := cmd.Flags().GetString("config")
-			if err != nil {
-				return ErrGetConfig
-			}
-			cfg, err := NewConfig(configPath)
-			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to retrieve the name of the multi-cluster")
 			}
 
-			if err := multicluster.Delete(cfg.Clusters, name); err != nil {
+			configPath, err := getConfigPath(cmd.Flags())
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve the configuration file path of the multi-cluster")
+			}
+
+			if err := provider.Delete(name, configPath); err != nil {
 				return errors.Wrap(err, "failed to delete multi-cluster")
 			}
 
@@ -61,10 +58,6 @@ func newDeleteCommand() *cobra.Command {
 		"./config.yml",
 		"the config file with the cluster configuration",
 	)
-
-	if err := cmd.MarkFlagRequired("config"); err != nil {
-		return nil
-	}
 
 	return cmd
 }
