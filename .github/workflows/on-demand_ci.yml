@@ -83,7 +83,7 @@ jobs:
           set -euo pipefail
           go test -json -v ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
       - name: Upload test log
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3.1.1
         if: ${{ !env.ACT }}
         with:
           name: test-log
