@@ -39,6 +39,21 @@ function get_github_latest_tag {
     echo "${version#*v}"
 }
 
+function setup_sysctl {
+    local key="$1"
+    local value="$2"
+
+    if [ "$(sysctl -n "$key")" != "$value" ]; then
+        if [ -d /etc/sysctl.d ]; then
+            echo "$key=$value" | sudo tee "/etc/sysctl.d/99-$key.conf"
+        elif [ -f /etc/sysctl.conf ]; then
+            echo "$key=$value" | sudo tee --append /etc/sysctl.conf
+        fi
+
+        sudo sysctl "$key=$value"
+    fi
+}
+
 if [ -f /etc/netplan/01-netcfg.yaml ]; then
     sudo sed -i "s/addresses: .*/addresses: [1.1.1.1, 8.8.8.8, 8.8.4.4]/g" /etc/netplan/01-netcfg.yaml
     sudo netplan apply
@@ -52,3 +67,7 @@ if ! command -v kpt; then
     curl -s "https://i.jpillora.com/GoogleContainerTools/kpt@v$(get_github_latest_tag GoogleContainerTools/kpt)!!" | bash
     kpt completion bash | sudo tee /etc/bash_completion.d/kpt >/dev/null
 fi
+
+# Increase inotify resources
+setup_sysctl "fs.inotify.max_user_watches" "524288"
+setup_sysctl "fs.inotify.max_user_instances" "512"
