@@ -49,7 +49,7 @@ func (p KindDataSource) Delete(name, configPath string) error {
 			}
 		}
 
-		if err := p.deleteNetwork(clusterName); err != nil {
+		if err := p.deleteNetwork(p.getClusterNetworkName(clusterName)); err != nil {
 			return errors.Wrap(err, "failed to delete cluster network")
 		}
 	}

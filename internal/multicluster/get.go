@@ -53,6 +53,10 @@ func NewProvider(configReader ConfigReader, wanProvider wanem.WanProvider,
 	}
 }
 
+func (p KindDataSource) getClusterNetworkName(clusterName string) string {
+	return "net-" + clusterName
+}
+
 func (p KindDataSource) Get(name string) error {
 	clusters, err := p.clusterProvider.List()
 	if err != nil {

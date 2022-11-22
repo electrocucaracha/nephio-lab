@@ -107,7 +107,7 @@ func (p KindDataSource) connectCluster(clusterName, wanName, gateway, serviceSub
 
 func (p KindDataSource) createCluster(clusterName string, config *v1alpha4.Cluster) error {
 	// use the new created docker network
-	os.Setenv("KIND_EXPERIMENTAL_DOCKER_NETWORK", clusterName)
+	os.Setenv("KIND_EXPERIMENTAL_DOCKER_NETWORK", p.getClusterNetworkName(clusterName))
 	// create the cluster
 	if err := p.clusterProvider.Create(
 		clusterName,
@@ -142,8 +142,9 @@ func createNodes(numberNodes int) []v1alpha4.Node {
 
 func (p KindDataSource) createNetwork(subnet, clusterName, wanName string) (string, error) {
 	// each cluster has its own docker network with the clustername
-	if err := p.dockerProvider.CreateNetwork(clusterName, subnet, false); err != nil {
-		return "", errors.Wrapf(err, "failed to create the %s docker network", clusterName)
+	networkName := p.getClusterNetworkName(clusterName)
+	if err := p.dockerProvider.CreateNetwork(networkName, subnet, false); err != nil {
+		return "", errors.Wrapf(err, "failed to create the %s docker network", networkName)
 	}
 
 	// connect wanem with the last IP of the range
@@ -153,8 +154,8 @@ func (p KindDataSource) createNetwork(subnet, clusterName, wanName string) (stri
 		return "", errors.Wrapf(err, "failed to get last IP Address from %s subnet", subnet)
 	}
 
-	if err := p.dockerProvider.ConnectNetwork(wanName, clusterName, gateway.String()); err != nil {
-		return "", errors.Wrapf(err, "failed to connect %s to %s network", clusterName, wanName)
+	if err := p.dockerProvider.ConnectNetwork(wanName, networkName, gateway.String()); err != nil {
+		return "", errors.Wrapf(err, "failed to connect %s to %s network", networkName, wanName)
 	}
 
 	return gateway.String(), nil
