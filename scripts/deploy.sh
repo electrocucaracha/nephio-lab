@@ -70,6 +70,8 @@ for context in $(kubectl config get-contexts --no-headers --output name); do
     if [[ $context == "kind-nephio"* ]]; then
         kpt_apply "$system_path"
         kpt_apply "$webui_path"
+        KUBE_EDITOR="sed -i \"s|type\: ClusterIP|type\: NodePort|g\"" kubectl -n nephio-webui edit service nephio-webui
+        KUBE_EDITOR="sed -i \"s|nodePort\: .*|nodePort\: 30007|g\"" kubectl -n nephio-webui edit service nephio-webui
     else
         kpt_apply "$configsys_path"
     fi

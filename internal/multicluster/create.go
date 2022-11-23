@@ -38,16 +38,7 @@ func (p KindDataSource) Create(name, configPath string) error {
 	}
 
 	for clusterName, clusterConfig := range *clustersInfo {
-		podSubnet := clusterConfig.PodSubnet
-		svcSubnet := clusterConfig.ServiceSubnet
-		config := &v1alpha4.Cluster{
-			Name:  clusterName,
-			Nodes: createNodes(clusterConfig.Nodes),
-			Networking: v1alpha4.Networking{
-				PodSubnet:     podSubnet,
-				ServiceSubnet: svcSubnet,
-			},
-		}
+		clusterConfig.Cluster.Name = clusterName
 
 		// each cluster has its own docker network with the clustername
 		gateway, err := p.createNetwork(clusterConfig.NodeSubnet, clusterName, wanName)
@@ -55,7 +46,7 @@ func (p KindDataSource) Create(name, configPath string) error {
 			return err
 		}
 
-		if err := p.createCluster(clusterName, config); err != nil {
+		if err := p.createCluster(clusterName, clusterConfig.Cluster); err != nil {
 			if err := p.deleteNetwork(clusterName); err != nil {
 				return errors.Wrap(err, "failed to delete network during the cluster creation")
 			}
@@ -63,7 +54,8 @@ func (p KindDataSource) Create(name, configPath string) error {
 			return errors.Wrap(err, "failed to create cluster")
 		}
 
-		if err := p.connectCluster(clusterName, wanName, gateway, svcSubnet, podSubnet); err != nil {
+		if err := p.connectCluster(clusterName, wanName, gateway, clusterConfig.Networking.ServiceSubnet,
+			clusterConfig.Networking.PodSubnet); err != nil {
 			return errors.Wrapf(err, "failed to connect cluster to %s network", wanName)
 		}
 	}
@@ -113,7 +105,7 @@ func (p KindDataSource) createCluster(clusterName string, config *v1alpha4.Clust
 		clusterName,
 		cluster.CreateWithV1Alpha4Config(config),
 		cluster.CreateWithDisplayUsage(true),
-		cluster.CreateWithDisplaySalutation(true),
+		cluster.CreateWithDisplaySalutation(false),
 	); err != nil {
 		return errors.Wrap(err, "failed to create kind cluster")
 	}
@@ -155,7 +147,7 @@ func (p KindDataSource) createNetwork(subnet, clusterName, wanName string) (stri
 	}
 
 	if err := p.dockerProvider.ConnectNetwork(wanName, networkName, gateway.String()); err != nil {
-		return "", errors.Wrapf(err, "failed to connect %s to %s network", networkName, wanName)
+		return "", errors.Wrapf(err, "failed to connect %s to %s network", clusterName, networkName)
 	}
 
 	return gateway.String(), nil

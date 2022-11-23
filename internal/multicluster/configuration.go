@@ -21,6 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 )
 
 // Config struct for multicluster config.
@@ -29,10 +30,8 @@ type Config struct {
 }
 
 type ClusterConfig struct {
-	Nodes         int    `yaml:"nodes"`
-	NodeSubnet    string `yaml:"nodeSubnet"`
-	PodSubnet     string `yaml:"podSubnet"`
-	ServiceSubnet string `yaml:"serviceSubnet"`
+	*v1alpha4.Cluster
+	NodeSubnet string `yaml:"nodeSubnet"`
 }
 
 type ConfigReader interface {

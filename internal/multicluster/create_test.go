@@ -20,6 +20,7 @@ import (
 	"github.com/electrocucaracha/nephio-lab/internal/multicluster"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 	"sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/kind/pkg/log"
 )
@@ -69,10 +70,13 @@ var _ = Describe("Create Service", func() {
 	emptyClusterConfig := map[string]multicluster.ClusterConfig{}
 	testClusterConfig := map[string]multicluster.ClusterConfig{
 		"test": {
-			Nodes:         1,
-			NodeSubnet:    "172.88.0.0/16",
-			PodSubnet:     "10.196.0.0/16",
-			ServiceSubnet: "10.96.0.0/16",
+			NodeSubnet: "172.88.0.0/16",
+			Cluster: &v1alpha4.Cluster{
+				Networking: v1alpha4.Networking{
+					PodSubnet:     "10.196.0.0/16",
+					ServiceSubnet: "10.96.0.0/16",
+				},
+			},
 		},
 	}
 

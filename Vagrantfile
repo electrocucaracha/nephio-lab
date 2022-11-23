@@ -35,6 +35,7 @@ Vagrant.configure('2') do |config|
   config.vm.box = 'generic/ubuntu2004'
   config.vm.box_check_update = false
   config.vm.synced_folder './', '/vagrant'
+  config.vm.network 'forwarded_port', guest: 7007, guest_ip: '127.0.0.1', host: 7007
 
   # Install dependencies
   config.vm.provision 'shell', privileged: false, path: './scripts/install.sh', reset: true

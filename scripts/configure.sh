@@ -34,8 +34,7 @@ sudo chown -R "$USER" "$HOME/.kube/"
 
 # Wait for node readiness
 for context in $(kubectl config get-contexts --no-headers --output name); do
-    kubectl config use-context "$context"
-    for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
-        kubectl wait --for=condition=ready "node/$node" --timeout=3m
+    for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' --context "$context"); do
+        kubectl wait --for=condition=ready "node/$node" --timeout=3m --context "$context"
     done
 done
