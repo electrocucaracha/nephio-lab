@@ -102,9 +102,13 @@ jobs:
         run: ./install.sh
       - name: Configure infrastructure
         working-directory: ./scripts
-        run: ./configure.sh
+        run: |
+          [ -d "${KREW_ROOT:-$HOME/.krew}/bin" ] && export PATH="$PATH:${KREW_ROOT:-$HOME/.krew}/bin"
+          ./configure.sh
       - name: Deploy Nephio services
         env:
           GITHUB_USERNAME: test
         working-directory: ./scripts
-        run: ./deploy.sh
+        run: |
+          [ -d "${KREW_ROOT:-$HOME/.krew}/bin" ] && export PATH="$PATH:${KREW_ROOT:-$HOME/.krew}/bin"
+          ./deploy.sh

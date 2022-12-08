@@ -49,6 +49,7 @@ Vagrant.configure('2') do |config|
       set -o errexit
       set -o pipefail
 
+      [ -d ${KREW_ROOT:-$HOME/.krew}/bin ] && export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin
       for var in $(printenv | grep GITHUB_); do echo "export $var" | sudo tee --append /etc/environment ; done
 
       cd /vagrant/scripts

@@ -16,7 +16,7 @@ if [[ ${DEBUG:-false} == "true" ]]; then
     export PKG_DEBUG=true
 fi
 
-export PKG_KREW_PLUGINS_LIST=" "
+export PKG_KREW_PLUGINS_LIST="ctx"
 
 function get_github_latest_tag {
     version=""

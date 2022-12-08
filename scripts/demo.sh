@@ -20,7 +20,7 @@ source _common.sh
 
 trap get_status ERR
 
-kubectl config use-context kind-nephio
+kubectl ctx kind-nephio
 
 # Registering Repositories
 kpt alpha repo register \

@@ -65,8 +65,8 @@ for path in "$system_path" "$configsys_path" "$webui_path"; do
     kpt live init "$path" --force
 done
 
-for context in $(kubectl config get-contexts --no-headers --output name); do
-    kubectl config use-context "$context"
+for context in $(kubectl ctx); do
+    kubectl ctx "$context"
     if [[ $context == "kind-nephio"* ]]; then
         kpt_apply "$system_path"
         kpt_apply "$webui_path"
