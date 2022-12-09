@@ -61,9 +61,30 @@ The following diagram shows the result after its execution.
 | eth3(172.89.0.254/16)                                                                                                                            |
 | eth4(172.88.0.254/16)                                                                                                                            |
 +--------------------------------------------------------------------------------------------------------------------------------------------------+
+
++===================================+
+|          host(host)               |
++========+===================+======+
+         |                   |
++--------+---------+ +-------+------+
+| frontend (gitea) | | db (mariadb) |
++------------------+ +--------------+
+|                  | |              |
++------------------+ +--------------+
 ```
+
+There are some VM ports forwarded to enable external access. These provide web
+access to the Nephio UI (based on [Backstage][5] project) and software package
+hosting service (based on [Gitea][6] project)
+
+<!-- markdown-link-check-disable -->
+* Software Package hosting URL - <http://localhost:3000/>
+* Nephio UI URL - <http://localhost:7007/>
+<!-- markdown-link-check-enable -->
 
 [1]: https://nephio.org/
 [2]: https://www.vagrantup.com/
 [3]: https://kind.sigs.k8s.io/
 [4]: https://github.com/electrocucaracha/bootstrap-vagrant
+[5]: https://backstage.io/
+[6]: https://gitea.io/
