@@ -42,16 +42,13 @@ Vagrant.configure('2') do |config|
   config.vm.provision 'shell', privileged: false, path: './scripts/install.sh', reset: true
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
-      DEBUG: ENV.fetch('DEBUG', true),
-      GITHUB_USERNAME: ENV['GITHUB_USERNAME'],
-      GITHUB_TOKEN: ENV['GITHUB_TOKEN']
+      DEBUG: ENV.fetch('DEBUG', true)
     }
     sh.inline = <<-SHELL
       set -o errexit
       set -o pipefail
 
       [ -d ${KREW_ROOT:-$HOME/.krew}/bin ] && export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin
-      for var in $(printenv | grep GITHUB_); do echo "export $var" | sudo tee --append /etc/environment ; done
 
       cd /vagrant/scripts
       ./configure.sh | tee ~/configure.log

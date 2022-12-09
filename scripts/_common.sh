@@ -15,6 +15,11 @@ if [[ ${DEBUG:-false} == "true" ]]; then
     set -o xtrace
 fi
 
+export gitea_default_password=secret
+export gitea_admin_account=gitea-admin
+export nephio_gitea_org=nephio-playground
+export participant=nephio-poc-001
+
 # info() - Prints a info message into the log console
 function info {
     _print_msg "INFO" "$1"

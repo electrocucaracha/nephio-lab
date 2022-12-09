@@ -1,0 +1,18 @@
+apiVersion: config.porch.kpt.dev/v1alpha1
+kind: Repository
+metadata:
+  name: catalog
+  namespace: default
+  labels:
+    kpt.dev/repository-content: organizational-blueprints
+spec:
+  content: Package
+  deployment: false
+  git:
+    branch: main
+    createBranch: true
+    directory: /
+    repo: http://gitea-server:3000/nephio-playground/participant-catalog.git
+    secretRef:
+      name: gitea-personal-access-token
+  type: git

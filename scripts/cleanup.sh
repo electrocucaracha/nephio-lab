@@ -27,3 +27,5 @@ done
 for vol in $(sudo docker volume list --quiet); do
     sudo docker volume rm "$vol"
 done
+
+sudo rm -rf /opt/nephio

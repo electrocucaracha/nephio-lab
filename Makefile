@@ -18,7 +18,6 @@ lint:
 	-e RUN_LOCAL=true \
 	-e LINTER_RULES_PATH=/ \
 	-e VALIDATE_KUBERNETES_KUBEVAL=false \
-	-e VALIDATE_RUST_CLIPPY=false \
 	github/super-linter
 
 .PHONY: fmt
