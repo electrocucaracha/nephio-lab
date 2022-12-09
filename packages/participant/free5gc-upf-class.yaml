@@ -1,3 +1,4 @@
+---
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2022
@@ -7,21 +8,17 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-DOCKER_CMD ?= $(shell which docker 2> /dev/null || which podman 2> /dev/null || echo docker)
+apiVersion: nf.nephio.org/v1alpha1
+kind: UPFClass
+metadata:
+  name: free5gc-upf
+spec:
+  packageRef:
+    repository: free5gc-packages
+    packageName: free5gc-upf
+    revision: v1
 
-test:
-	@go test -v ./...
-
-.PHONY: lint
-lint:
-	sudo -E $(DOCKER_CMD) run --rm -v $$(pwd):/tmp/lint \
-	-e RUN_LOCAL=true \
-	-e LINTER_RULES_PATH=/ \
-	-e VALIDATE_KUBERNETES_KUBEVAL=false \
-	github/super-linter
-
-.PHONY: fmt
-fmt:
-	@go fmt ./...
-	sudo -E $(DOCKER_CMD) run --rm -u "$$(id -u):$$(id -g)" \
-	-v "$$(pwd):/mnt" -w /mnt mvdan/shfmt -l -w -i 4 -s .
+  n3EndpointCount: 1
+  n4EndpointCount: 1
+  n6EndpointCount: 1
+  n9EndpointCount: 0

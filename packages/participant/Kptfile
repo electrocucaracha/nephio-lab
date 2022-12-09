@@ -1,3 +1,4 @@
+---
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2022
@@ -7,21 +8,15 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-DOCKER_CMD ?= $(shell which docker 2> /dev/null || which podman 2> /dev/null || echo docker)
-
-test:
-	@go test -v ./...
-
-.PHONY: lint
-lint:
-	sudo -E $(DOCKER_CMD) run --rm -v $$(pwd):/tmp/lint \
-	-e RUN_LOCAL=true \
-	-e LINTER_RULES_PATH=/ \
-	-e VALIDATE_KUBERNETES_KUBEVAL=false \
-	github/super-linter
-
-.PHONY: fmt
-fmt:
-	@go fmt ./...
-	sudo -E $(DOCKER_CMD) run --rm -u "$$(id -u):$$(id -g)" \
-	-v "$$(pwd):/mnt" -w /mnt mvdan/shfmt -l -w -i 4 -s .
+apiVersion: kpt.dev/v1
+kind: Kptfile
+metadata:
+  name: participant
+  annotations:
+    config.kubernetes.io/local-config: "true"
+info:
+  description: Kpt package to apply with participant specific repositories and other setup
+pipeline:
+  mutators:
+    - image: gcr.io/kpt-fn/starlark:v0.4.3
+      configPath: set-repos.yaml

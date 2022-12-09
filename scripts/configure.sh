@@ -18,10 +18,6 @@ fi
 # shellcheck source=scripts/_common.sh
 source _common.sh
 
-gitea_default_password=secret
-gitea_admin_account=gitea-admin
-nephio_gitea_org=nephio-playground
-
 trap get_status ERR
 
 function exec_gitea {
@@ -29,11 +25,14 @@ function exec_gitea {
         ancestor=gitea/gitea:1.18-dev -q)" /app/gitea/gitea "$@"
 }
 
+function get_admin_token {
+    exec_gitea admin user generate-access-token --username \
+        "$gitea_admin_account" | awk -F ':' '{ print $2}'
+}
+
 function _curl_gitea_api {
-    user_token=$(exec_gitea admin user generate-access-token --username \
-        "$gitea_admin_account" | awk -F ':' '{ print $2}')
     curl -k --data "$2" \
-        -H "Authorization: token $user_token" \
+        -H "Authorization: token $(get_admin_token)" \
         -H "content-type: application/json" \
         "http://localhost:3000/api/v1/$1"
 }
@@ -92,19 +91,20 @@ create_user cnf-vendor
 create_user cnf-user
 create_org "$nephio_gitea_org"
 for repo in catalog regional edge-1 edge-2; do
-    create_repo "$nephio_gitea_org" "nephio-poc-001-$repo"
+    create_repo "$nephio_gitea_org" "$participant-$repo"
 done
 
 # Wait for node readiness
 for context in $(kubectl config get-contexts --no-headers --output name); do
-    for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' --context "$context"); do
-        kubectl wait --for=condition=ready "node/$node" --timeout=3m --context "$context"
+    for node in $(kubectl get node \
+        -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
+        --context "$context"); do
+        kubectl wait --for=condition=ready "node/$node" --context "$context"
+        kubectl create secret generic -n default \
+            gitea-personal-access-token \
+            --from-literal username="$gitea_admin_account" \
+            --from-literal password="$gitea_default_password" \
+            --type kubernetes.io/basic-auth \
+            --context "$context"
     done
 done
-
-kubectl create secret generic -n default \
-    gitea-personal-access-token \
-    --from-literal username="$gitea_admin_account" \
-    --from-literal password="$gitea_default_password" \
-    --type kubernetes.io/basic-auth \
-    --context kind-nephio

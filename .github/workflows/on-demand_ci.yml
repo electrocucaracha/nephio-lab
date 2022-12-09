@@ -104,7 +104,5 @@ jobs:
         working-directory: ./scripts
         run: ./configure.sh
       - name: Deploy Nephio services
-        env:
-          GITHUB_USERNAME: test
         working-directory: ./scripts
         run: ./deploy.sh

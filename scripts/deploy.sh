@@ -21,14 +21,11 @@ source _common.sh
 trap get_status ERR
 
 base_path=/opt/nephio
-system_path="$base_path/system"
-webui_path="$base_path/webui"
-configsys_path="$base_path/configsync"
+nephio_url_base="https://github.com/nephio-project/nephio-packages.git/nephio-"
 
 function get_pkg {
-    local pkg="$1"
-    local path="$base_path/$pkg"
-    url="https://github.com/nephio-project/nephio-packages.git/nephio-$pkg"
+    local path="$1"
+    local url="$2"
 
     if ! [ -d "$path" ]; then
         sudo -E kpt pkg get --for-deployment "$url" "$path"
@@ -39,40 +36,57 @@ function get_pkg {
     fi
 }
 
-function kpt_apply {
-    kpt live apply "$1" --reconcile-timeout=15m
+function install_system {
+    local path="$base_path/system"
+
+    get_pkg "$path" "${nephio_url_base}system"
+    _install_pkg "$path"
+}
+
+function install_webui {
+    local path="$base_path/webui"
+
+    get_pkg "$path" "${nephio_url_base}webui"
+    # kpt fn eval "$path" --save --type mutator --match-kind="Service" --image gcr.io/kpt-fn/create-setters:v0.1.0 -- type=NodePort nodePort=30007
+    _install_pkg "$path"
+    KUBE_EDITOR="sed -i \"s|type\: ClusterIP|type\: NodePort|g\"" kubectl -n nephio-webui edit service nephio-webui
+    KUBE_EDITOR="sed -i \"s|nodePort\: .*|nodePort\: 30007|g\"" kubectl -n nephio-webui edit service nephio-webui
+}
+
+function install_configsync {
+    local path="$base_path/$1"
+
+    get_pkg "$path" "${nephio_url_base}configsync"
+    _install_pkg "$path"
+}
+
+function install_participant {
+    local path="$base_path/$1"
+    vm_ip=$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }')
+
+    get_pkg "$path" https://github.com/electrocucaracha/nephio-lab.git/packages/participant
+    kpt fn eval "$path" --save --type mutator \
+        --image gcr.io/kpt-fn/search-replace:v0.2 -- 'by-path=spec.git.repo' 'by-value-regex=(.*)gitea-server(.*)' "put-value=\${1}${vm_ip}\${2}"
+    _install_pkg "$path"
+}
+
+function _install_pkg {
+    local path="$1"
+
+    kpt fn render "$path"
+    kpt live init "$path" --force
+    kpt live apply "$path" --reconcile-timeout=15m
 }
 
 sudo mkdir -p "$base_path"
 
-# Install server components
-get_pkg system
-
-# Install Web UI
-get_pkg webui
-
-# Installing Config Sync in Workload Clusters
-get_pkg configsync
-kpt fn eval "$configsys_path" \
-    --save \
-    --type mutator \
-    --image gcr.io/kpt-fn/search-replace:v0.2.0 \
-    -- by-path=spec.git.repo by-value-regex='https://github.com/[a-zA-Z0-9-]+/(.*)' \
-    put-value="https://github.com/${GITHUB_USERNAME}/\${1}"
-
-for path in "$system_path" "$configsys_path" "$webui_path"; do
-    kpt fn render "$path"
-    kpt live init "$path" --force
-done
-
 for context in $(kubectl config get-contexts --no-headers --output name); do
     kubectl config use-context "$context"
     if [[ $context == "kind-nephio"* ]]; then
-        kpt_apply "$system_path"
-        kpt_apply "$webui_path"
-        KUBE_EDITOR="sed -i \"s|type\: ClusterIP|type\: NodePort|g\"" kubectl -n nephio-webui edit service nephio-webui
-        KUBE_EDITOR="sed -i \"s|nodePort\: .*|nodePort\: 30007|g\"" kubectl -n nephio-webui edit service nephio-webui
+        install_system
+        install_webui
+        install_participant "$participant"
     else
-        kpt_apply "$configsys_path"
+        install_configsync "${context#*-}"
     fi
 done
