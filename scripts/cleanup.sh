@@ -23,3 +23,7 @@ done
 for net in $(sudo docker network list --filter "name=net-*" --quiet); do
     sudo docker network rm "$net" >/dev/null
 done
+
+for vol in $(sudo docker volume list --quiet); do
+    sudo docker volume rm "$vol"
+done

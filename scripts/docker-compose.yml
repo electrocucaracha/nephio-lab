@@ -1,0 +1,47 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2022
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.10
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=gitea
+    volumes:
+      - db-data:/var/lib/mysql
+    network_mode: host
+  frontend:
+    image: gitea/gitea:1.18-dev
+    restart: always
+    environment:
+      - USER_UID=1000 # Enter the UID found from previous command output
+      - USER_GID=100 # Enter the GID found from previous command output
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=localhost:3306
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=${MARIADB_USER}
+      - GITEA__database__PASSWD=${MARIADB_PASSWORD}
+    network_mode: host
+    volumes:
+      - "gitea-data:/data"
+      - ./gitea/app.ini:/data/gitea/conf/app.ini
+    depends_on:
+      - db
+
+volumes:
+  db-data:
+    driver: local
+  gitea-data:
+    driver: local
