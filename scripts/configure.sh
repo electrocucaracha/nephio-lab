@@ -18,6 +18,8 @@ fi
 # shellcheck source=scripts/_common.sh
 source _common.sh
 
+MULTUS_CNI_VERSION=3.9.2
+
 trap get_status ERR
 
 function exec_gitea {
@@ -107,4 +109,7 @@ for context in $(kubectl config get-contexts --no-headers --output name); do
             --type kubernetes.io/basic-auth \
             --context "$context"
     done
+    if [[ $context != "kind-nephio"* ]]; then
+        kubectl apply --filename="https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/v$MULTUS_CNI_VERSION/deployments/multus-daemonset-thick-plugin.yml" --context "$context"
+    fi
 done
