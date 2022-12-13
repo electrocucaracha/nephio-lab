@@ -42,6 +42,9 @@ clusters:
       nodes:
         - role: control-plane
           image: kindest/node:v1.25.3
+          extraMounts:
+            - hostPath: /opt/containernetworking/plugins
+              containerPath: /opt/cni/bin
   edge-2:
     nodeSubnet: "172.91.0.0/16"
     cluster:
@@ -52,3 +55,6 @@ clusters:
       nodes:
         - role: control-plane
           image: kindest/node:v1.25.3
+          extraMounts:
+            - hostPath: /opt/containernetworking/plugins
+              containerPath: /opt/cni/bin
