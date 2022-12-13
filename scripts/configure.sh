@@ -18,6 +18,8 @@ fi
 # shellcheck source=scripts/_common.sh
 source _common.sh
 
+MULTUS_CNI_VERSION=3.9.2
+
 trap get_status ERR
 
 function exec_gitea {
@@ -96,22 +98,20 @@ done
 
 # Wait for node readiness
 for context in $(kubectl ctx); do
+    kubectl ctx "$context"
     for node in $(kubectl get node \
         -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
         --context "$context"); do
-        kubectl wait --for=condition=ready "node/$node" --context "$context"
+        kubectl wait --for=condition=ready "node/$node"
+    done
+    if [[ $context == "kind-nephio"* ]]; then
         kubectl create secret generic -n default \
             gitea-personal-access-token \
             --from-literal username="$gitea_admin_account" \
-            --from-literal password="$(get_admin_token)" \
+            --from-literal password="$gitea_default_password" \
             --type kubernetes.io/basic-auth \
-            --context "$context"
-    done
+            --context kind-nephio
+    else
+        kubectl apply --filename="https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/v$MULTUS_CNI_VERSION/deployments/multus-daemonset-thick-plugin.yml"
+    fi
 done
-
-kubectl create secret generic -n default \
-    gitea-personal-access-token \
-    --from-literal username="$gitea_admin_account" \
-    --from-literal password="$gitea_default_password" \
-    --type kubernetes.io/basic-auth \
-    --context kind-nephio
