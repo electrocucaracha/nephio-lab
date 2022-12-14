@@ -26,8 +26,8 @@ services:
     image: gitea/gitea:1.18-dev
     restart: always
     environment:
-      - USER_UID=1000 # Enter the UID found from previous command output
-      - USER_GID=100 # Enter the GID found from previous command output
+      - USER_UID=1000
+      - USER_GID=100
       - GITEA__database__DB_TYPE=mysql
       - GITEA__database__HOST=localhost:3306
       - GITEA__database__NAME=gitea
