@@ -22,6 +22,11 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     network_mode: host
+    healthcheck:
+      test: "/usr/bin/mysql --user=$MARIADB_USER --password=$MARIADB_PASSWORD --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
   frontend:
     image: gitea/gitea:1.18-dev
     restart: always
@@ -38,7 +43,14 @@ services:
       - "gitea-data:/data"
       - ./gitea/app.ini:/data/gitea/conf/app.ini
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:3000 || exit 1
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
 
 volumes:
   db-data:
