@@ -1,5 +1,5 @@
-FROM alpine:3.16
+FROM alpine:3.17
 
-RUN apk add --no-cache iproute2=5.17.0-r0 tcpdump=4.99.1-r3 iptables=1.8.8-r1
+RUN apk add --no-cache iproute2=6.0.0-r1 tcpdump=4.99.1-r4 iptables=1.8.8-r2
 
 ENTRYPOINT ["sleep","infinity"]
