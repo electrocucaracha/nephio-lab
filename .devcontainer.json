@@ -1,0 +1,20 @@
+{
+    "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:1": {},
+        "ghcr.io/electrocucaracha/pkg-mgr_scripts/kubectl:latest": {
+            "pkg_krew_plugins_list": "ctx"
+        },
+        "ghcr.io/electrocucaracha/pkg-mgr_scripts/cni-plugins:latest": {
+            "pkg_cni_plugins_install_flannel": false
+        },
+        "ghcr.io/devcontainers/features/go:1": {},
+        "ghcr.io/devcontainers/features/python:1": {}
+    },
+    "hostRequirements": {
+        "cpus": 8,
+        "memory": "16gb"
+    },
+    "postCreateCommand": "cd scripts/; ./postCreateCommand.sh | tee ~/postCreateCommand.log",
+    "forwardPorts": ["127.0.0.1:7007", "127.0.0.1:3000"]
+}

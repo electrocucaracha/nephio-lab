@@ -49,14 +49,13 @@ Vagrant.configure('2') do |config|
       set -o pipefail
 
       cd /vagrant/scripts
-      ./configure.sh | tee ~/configure.log
-      ./deploy.sh | tee ~/deploy.log
+      ./postCreateCommand.sh | tee ~/postCreateCommand.log
     SHELL
   end
 
   %i[virtualbox libvirt].each do |provider|
     config.vm.provider provider do |p|
-      p.cpus = ENV['CPUS'] || 3
+      p.cpus = ENV['CPUS'] || 8
       p.memory = ENV['MEMORY'] || mem / 1024 / 4
     end
   end
