@@ -63,22 +63,25 @@ function create_user {
 if [ -z "$(sudo docker images wanem:0.0.1 -q)" ]; then
     sudo docker build -t wanem:0.0.1 .
 fi
-if [ ! -f "$HOME/go/bin/multicluster" ]; then
-    pushd ../ >/dev/null
-    go install ./...
-    popd >/dev/null
-fi
 if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
-    sudo -E "$HOME/go/bin/multicluster" create --config ./config.yml --name nephio
+    # shellcheck disable=SC1091
+    [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
+    sudo -E "$(command -v go)" run ../... create --config ./config.yml --name nephio
     mkdir -p "$HOME/.kube"
     sudo chown -R "$USER" "$HOME/.kube/"
 fi
 
 # Gitea configuration
+if [ "${CODESPACE_NAME-}" ]; then
+    gitea_domain="$CODESPACE_NAME-3000.preview.app.github.dev"
+    sed -i "s|ROOT_URL .*|ROOT_URL = https://${gitea_domain}/|g" ./gitea/app.ini
+    sed -i "s|^DOMAIN .*|DOMAIN = $gitea_domain|g" ./gitea/app.ini
+    sed -i "s|^HTTP_PORT .*|HTTP_PORT = 80|g" ./gitea/app.ini
+fi
 sudo docker-compose up -d
 attempt_counter=0
 max_attempts=5
-while ! sudo docker-compose logs frontend | grep -q "Starting new Web server"; do
+until curl -s http://localhost:3000/api/swagger; do
     if [ ${attempt_counter} -eq ${max_attempts} ]; then
         echo "Max attempts reached"
         exit 1

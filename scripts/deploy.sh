@@ -62,11 +62,11 @@ function install_configsync {
 
 function install_participant {
     local path="$base_path/$1"
-    vm_ip=$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }')
+    gitea_internal_url="http://$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }'):3000/"
 
     get_pkg "$path" https://github.com/electrocucaracha/nephio-lab.git/packages/participant
     kpt fn eval "$path" --save --type mutator \
-        --image gcr.io/kpt-fn/search-replace:v0.2 -- 'by-path=spec.git.repo' 'by-value-regex=(.*)gitea-server(.*)' "put-value=\${1}${vm_ip}\${2}"
+        --image gcr.io/kpt-fn/search-replace:v0.2 -- 'by-path=spec.git.repo' 'by-value-regex=http://gitea-server:3000/(.*)' "put-value=${gitea_internal_url}\${1}"
     _install_pkg "$path"
 }
 
