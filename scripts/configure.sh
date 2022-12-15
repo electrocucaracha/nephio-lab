@@ -19,6 +19,7 @@ fi
 source _common.sh
 
 MULTUS_CNI_VERSION=3.9.2
+METALLB_VERSION=0.13.7
 
 trap get_status ERR
 
@@ -112,5 +113,18 @@ for context in $(kubectl config get-contexts --no-headers --output name); do
     done
     if [[ $context != "kind-nephio"* ]]; then
         kubectl apply --filename="https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/v$MULTUS_CNI_VERSION/deployments/multus-daemonset-thick-plugin.yml" --context "$context"
+    else
+        kubectl apply --filename="https://raw.githubusercontent.com/metallb/metallb/v$METALLB_VERSION/config/manifests/metallb-native.yaml" --context "$context"
+    fi
+done
+
+for context in $(kubectl config get-contexts --no-headers --output name); do
+    if [[ $context != "kind-nephio"* ]]; then
+        kubectl rollout status daemonset/kube-multus-ds \
+            --namespace kube-system --timeout=3m --context "$context"
+    else
+        kubectl wait --namespace metallb-system --for=condition=ready pod \
+            --selector=app=metallb --timeout=3m --context "$context"
+        kubectl apply --filename=./resources/metallb-config.yml --context "$context"
     fi
 done

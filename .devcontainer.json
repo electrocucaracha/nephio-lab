@@ -16,5 +16,5 @@
         "memory": "16gb"
     },
     "postCreateCommand": "cd scripts/; ./postCreateCommand.sh | tee ~/postCreateCommand.log",
-    "forwardPorts": ["127.0.0.1:7007", "127.0.0.1:3000"]
+    "forwardPorts": ["172.88.0.200:7007", "127.0.0.1:3000"]
 }

@@ -49,8 +49,7 @@ function install_webui {
     get_pkg "$path" "${nephio_url_base}webui"
     # kpt fn eval "$path" --save --type mutator --match-kind="Service" --image gcr.io/kpt-fn/create-setters:v0.1.0 -- type=NodePort nodePort=30007
     _install_pkg "$path"
-    KUBE_EDITOR="sed -i \"s|type\: ClusterIP|type\: NodePort|g\"" kubectl -n nephio-webui edit service nephio-webui
-    KUBE_EDITOR="sed -i \"s|nodePort\: .*|nodePort\: 30007|g\"" kubectl -n nephio-webui edit service nephio-webui
+    KUBE_EDITOR="sed -i \"s|type\: ClusterIP|type\: LoadBalancer|g\"" kubectl -n nephio-webui edit service nephio-webui
 }
 
 function install_configsync {
