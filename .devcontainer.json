@@ -15,6 +15,6 @@
         "cpus": 8,
         "memory": "16gb"
     },
-    "postCreateCommand": "cd scripts/; ./postCreateCommand.sh | tee ~/postCreateCommand.log",
+    "postCreateCommand": "cd scripts/; ./main.sh | tee ~/main.log",
     "forwardPorts": [7007, 3000]
 }

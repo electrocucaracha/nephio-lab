@@ -52,7 +52,7 @@ Vagrant.configure('2') do |config|
       grep -q NEPHIO_WEBUI_CLUSTER_TYPE /etc/environment || echo "NEPHIO_WEBUI_CLUSTER_TYPE=$NEPHIO_WEBUI_CLUSTER_TYPE" | sudo tee --append /etc/environment
 
       cd /vagrant/scripts
-      ./postCreateCommand.sh | tee ~/postCreateCommand.log
+      ./main.sh | tee ~/main.log
     SHELL
   end
 

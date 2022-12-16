@@ -9,7 +9,7 @@
 
 The goal of this project is to provision a self-contained environment for the
 [Nephio][1] [Workshop][2] hosted during the ONE Summit 2022. The
-[post create command script](./scripts/postCreateCommand.sh) installs
+[post create command script](./scripts/main.sh) installs
 dependencies and configures Nephio services, it uses the [KinD API][3] to
 deploy several Kubernetes clusters locally and [Gitea][4] as software package
 hosting service. Nephio UI consumes [Backstage][5] project and local ports are
