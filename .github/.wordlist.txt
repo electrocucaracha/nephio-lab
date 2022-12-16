@@ -24,6 +24,7 @@ crds
 CRs
 customizations
 declaratively
+discussioncomment
 dnn
 dns
 downlinkThroughput
@@ -77,6 +78,7 @@ OCI
 ol
 opensource
 Orch
+orgs
 PackageDeployment
 png
 poc
@@ -98,6 +100,7 @@ SMF
 src
 svc
 svg
+tcpservers
 toolchain
 topo
 ue
@@ -115,6 +118,7 @@ VirtualBox
 vm
 VMs
 vpc
+VSCode
 webui
 workshopper
 yaml

@@ -35,6 +35,9 @@ variable.
 
 * Remote (via [Codespaces][8])
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=master&repo=538643510)
+> [Apparently][9] the only way to access to tcpservers (like Nephio UI) in
+Codespaces is [using the VSCode client][10], which binds all ports to
+`127.0.0.1` address.
 
 The following diagram shows the result after its execution.
 
@@ -85,3 +88,5 @@ The following diagram shows the result after its execution.
 [6]: https://www.vagrantup.com/
 [7]: https://github.com/electrocucaracha/bootstrap-vagrant
 [8]: https://github.com/features/codespaces
+[9]: https://github.com/orgs/community/discussions/28528#discussioncomment-3360324
+[10]: https://docs.github.com/en/codespaces/developing-in-codespaces/using-github-codespaces-in-visual-studio-code

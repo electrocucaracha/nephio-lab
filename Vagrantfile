@@ -42,11 +42,14 @@ Vagrant.configure('2') do |config|
   config.vm.provision 'shell', privileged: false, path: './scripts/install.sh', reset: true
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
-      DEBUG: ENV.fetch('DEBUG', true)
+      DEBUG: ENV.fetch('DEBUG', true),
+      NEPHIO_WEBUI_CLUSTER_TYPE: ENV.fetch('NEPHIO_WEBUI_CLUSTER_TYPE', 'LoadBalancer')
     }
     sh.inline = <<-SHELL
       set -o errexit
       set -o pipefail
+
+      grep -q NEPHIO_WEBUI_CLUSTER_TYPE /etc/environment || echo "NEPHIO_WEBUI_CLUSTER_TYPE=$NEPHIO_WEBUI_CLUSTER_TYPE" | sudo tee --append /etc/environment
 
       cd /vagrant/scripts
       ./postCreateCommand.sh | tee ~/postCreateCommand.log
