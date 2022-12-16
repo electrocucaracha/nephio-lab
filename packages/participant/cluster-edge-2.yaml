@@ -27,7 +27,7 @@ spec:
   siteCode: edge-2
   cniConfig:
     cniType: macvlan
-    masterInterface: ens1
+    masterInterface: eth0
 ---
 apiVersion: infra.nephio.org/v1alpha1
 kind: ClusterScaleProfile

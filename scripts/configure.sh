@@ -95,7 +95,7 @@ create_user cnf-vendor
 create_user cnf-user
 create_org "$nephio_gitea_org"
 for repo in catalog regional edge-1 edge-2; do
-    create_repo "$nephio_gitea_org" "$participant-$repo"
+    create_repo "$nephio_gitea_org" "$repo"
 done
 
 # Wait for node readiness

@@ -16,7 +16,3 @@ metadata:
     config.kubernetes.io/local-config: "true"
 info:
   description: Kpt package to apply with participant specific repositories and other setup
-pipeline:
-  mutators:
-    - image: gcr.io/kpt-fn/starlark:v0.4.3
-      configPath: set-repos.yaml

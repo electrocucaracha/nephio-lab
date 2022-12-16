@@ -22,6 +22,7 @@ trap get_status ERR
 
 base_path=/opt/nephio
 nephio_url_base="https://github.com/nephio-project/nephio-packages.git/nephio-"
+gitea_internal_url="http://$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }'):3000/"
 
 function get_pkg {
     local path="$1"
@@ -56,16 +57,17 @@ function install_configsync {
     local path="$base_path/$1"
 
     get_pkg "$path" "${nephio_url_base}configsync"
+    kpt fn eval "$path" --save --type mutator \
+        --image gcr.io/kpt-fn/search-replace:v0.2 -- 'by-path=spec.git.repo' 'by-value-regex=https://github.com/(.*)/(.*)' "put-value=${gitea_internal_url}${nephio_gitea_org}/\${2}"
     _install_pkg "$path"
 }
 
 function install_participant {
-    local path="$base_path/$1"
-    gitea_internal_url="http://$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }'):3000/"
+    local path="$base_path/nephio-workshop"
 
     get_pkg "$path" https://github.com/electrocucaracha/nephio-lab.git/packages/participant
     kpt fn eval "$path" --save --type mutator \
-        --image gcr.io/kpt-fn/search-replace:v0.2 -- 'by-path=spec.git.repo' 'by-value-regex=http://gitea-server:3000/(.*)' "put-value=${gitea_internal_url}\${1}"
+        --image gcr.io/kpt-fn/search-replace:v0.2 -- 'by-path=spec.git.repo' 'by-value-regex=http://gitea-server:3000/(.*)/(.*)' "put-value=${gitea_internal_url}${nephio_gitea_org}/\${2}"
     _install_pkg "$path"
 }
 
@@ -84,7 +86,7 @@ for context in $(kubectl config get-contexts --no-headers --output name); do
     if [[ $context == "kind-nephio"* ]]; then
         install_system
         install_webui
-        install_participant "$participant"
+        install_participant
     else
         install_configsync "${context#*-}"
     fi

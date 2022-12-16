@@ -5,16 +5,11 @@ Kpt package to apply with participant specific repositories and other setup
 
 ## Usage
 
-When you fetch the package, you should give it the name of the participant. So,
-if the participant is 'workshopper', then:
-
 ```bash
-PARTICIPANT=nephio-poc-001 # Replace 'workshopper' with the participant name provided to you
-
-kpt pkg get --for-deployment https://github.com/electrocucaracha/nephio-lab/packages/participant $PARTICIPANT
-kpt fn render $PARTICIPANT
-kpt live init $PARTICIPANT
-kpt live apply $PARTICIPANT --output table
+kpt pkg get --for-deployment https://github.com/electrocucaracha/nephio-lab/packages/participant
+kpt fn render
+kpt live init
+kpt live apply --output table
 ```
 
 This assumes the Gitea basic auth secret `gitea-personal-access-token` has

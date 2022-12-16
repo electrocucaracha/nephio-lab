@@ -22,7 +22,7 @@ spec:
     branch: main
     createBranch: true
     directory: /
-    repo: http://gitea-server:3000/nephio-playground/participant-catalog.git
+    repo: http://gitea-server:3000/nephio-playground/catalog.git
     secretRef:
       name: gitea-personal-access-token
   type: git
