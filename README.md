@@ -13,7 +13,7 @@ The goal of this project is to provision a self-contained environment for the
 dependencies and configures Nephio services, it uses the [KinD API][3] to
 deploy several Kubernetes clusters locally and [Gitea][4] as software package
 hosting service. Nephio UI consumes [Backstage][5] project and local ports are
-forwared as follows:
+forwarded as follows:
 
 <!-- markdown-link-check-disable -->
 * Software Package hosting URL - <http://localhost:3000/>
