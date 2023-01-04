@@ -20,3 +20,13 @@ export DEBUG=true
 ./deploy.sh
 
 kubectl config use-context kind-nephio
+
+if [ "${CODESPACE_NAME-}" ]; then
+    if ! command -v gh >/dev/null; then
+        curl -s 'https://i.jpillora.com/cli/cli!?as=gh' | bash
+    fi
+    for port in 7007 3000; do
+        gh codespace ports visibility "$port:public" -c "$CODESPACE_NAME"
+    done
+    gh codespace ports -c "$CODESPACE_NAME"
+fi
