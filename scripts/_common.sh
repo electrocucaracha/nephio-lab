@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
-# Copyright (c)
+# Copyright (c) 2022,2023
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
@@ -18,21 +18,24 @@ fi
 export gitea_default_password=secret
 export gitea_admin_account=gitea-admin
 export nephio_gitea_org=nephio-playground
+export nephio_gitea_repos=(catalog regional edge-1 edge-2)
 
-# info() - Prints a info message into the log console
-function info {
-    _print_msg "INFO" "$1"
+function exec_gitea {
+    sudo docker exec --user git "$(sudo docker ps --filter \
+        ancestor=gitea/gitea:1.18-dev -q)" /app/gitea/gitea "$@"
 }
 
-# error() - Prints a error message into the log console
-function error {
-    get_status
-    _print_msg "ERROR" "$1"
-    exit 1
+function _get_admin_token {
+    exec_gitea admin user generate-access-token --username \
+        "$gitea_admin_account" | awk -F ':' '{ print $2}'
 }
 
-function _print_msg {
-    echo "$(date +%H:%M:%S) - $1: $2"
+function curl_gitea_api {
+    curl_cmd="curl -s -H 'Authorization: token $(_get_admin_token)' -H 'content-type: application/json' http://localhost:3000/api/v1/$1"
+    if [ "${2-}" ]; then
+        curl_cmd+=" -k --data '$2'"
+    fi
+    eval "$curl_cmd"
 }
 
 # get_status() - Print the current status of the cluster

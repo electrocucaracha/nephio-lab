@@ -23,32 +23,15 @@ METALLB_VERSION=0.13.7
 
 trap get_status ERR
 
-function exec_gitea {
-    sudo docker exec --user git "$(sudo docker ps --filter \
-        ancestor=gitea/gitea:1.18-dev -q)" /app/gitea/gitea "$@"
+function _create_repo {
+    curl_gitea_api "org/$1/repos" "{\"name\":\"$2\", \"auto_init\": true, \"default_branch\": \"main\"}"
 }
 
-function get_admin_token {
-    exec_gitea admin user generate-access-token --username \
-        "$gitea_admin_account" | awk -F ':' '{ print $2}'
+function _create_org {
+    curl_gitea_api "orgs" "{\"username\":\"$1\"}"
 }
 
-function _curl_gitea_api {
-    curl -k --data "$2" \
-        -H "Authorization: token $(get_admin_token)" \
-        -H "content-type: application/json" \
-        "http://localhost:3000/api/v1/$1"
-}
-
-function create_repo {
-    _curl_gitea_api "org/$1/repos" "{\"name\":\"$2\", \"auto_init\": true, \"default_branch\": \"main\"}"
-}
-
-function create_org {
-    _curl_gitea_api "orgs" "{\"username\":\"$1\"}"
-}
-
-function create_user {
+function _create_user {
     user_list=$(exec_gitea admin user list)
     if ! echo "$user_list" | grep -q "$1"; then
         user_create_cmd=(admin user create --username "$1" --password
@@ -58,6 +41,31 @@ function create_user {
         fi
         exec_gitea "${user_create_cmd[@]}"
     fi
+}
+
+function _wait_gitea_services {
+    local max_attempts=5
+    for svc in $(sudo docker-compose ps -aq); do
+        attempt_counter=0
+        until [ "$(sudo docker inspect "$svc" --format='{{.State.Health.Status}}')" == "healthy" ]; do
+            if [ ${attempt_counter} -eq ${max_attempts} ]; then
+                echo "Max attempts reached for waiting to gitea containers"
+                exit 1
+            fi
+            attempt_counter=$((attempt_counter + 1))
+            sleep $((attempt_counter * 5))
+        done
+    done
+
+    attempt_counter=0
+    until curl -s http://localhost:3000/api/swagger; do
+        if [ ${attempt_counter} -eq ${max_attempts} ]; then
+            echo "Max attempts reached for waiting for gitea API"
+            exit 1
+        fi
+        attempt_counter=$((attempt_counter + 1))
+        sleep $((attempt_counter * 5))
+    done
 }
 
 # Multi-cluster configuration
@@ -78,24 +86,15 @@ if [ "${CODESPACE_NAME-}" ]; then
     sed -i "s|ROOT_URL .*|ROOT_URL = https://${gitea_domain}/|g" ./gitea/app.ini
 fi
 sudo docker-compose up -d
-attempt_counter=0
-max_attempts=5
-until curl -s http://localhost:3000/api/swagger; do
-    if [ ${attempt_counter} -eq ${max_attempts} ]; then
-        echo "Max attempts reached"
-        exit 1
-    fi
-    attempt_counter=$((attempt_counter + 1))
-    sleep $((attempt_counter * 5))
-done
+_wait_gitea_services
 
 # NOTE: The first gitea user created won't be forced to change the password
-create_user "$gitea_admin_account" true
-create_user cnf-vendor
-create_user cnf-user
-create_org "$nephio_gitea_org"
-for repo in catalog regional edge-1 edge-2; do
-    create_repo "$nephio_gitea_org" "$repo"
+_create_user "$gitea_admin_account" true
+_create_user cnf-vendor
+_create_user cnf-user
+_create_org "$nephio_gitea_org"
+for repo in "${nephio_gitea_repos[@]}"; do
+    _create_repo "$nephio_gitea_org" "$repo"
 done
 
 # Wait for node readiness
@@ -109,7 +108,7 @@ for context in $(kubectl config get-contexts --no-headers --output name); do
             --from-literal username="$gitea_admin_account" \
             --from-literal password="$gitea_default_password" \
             --type kubernetes.io/basic-auth \
-            --context "$context"
+            --context "$context" || :
     done
     if [[ $context != "kind-nephio"* ]]; then
         kubectl apply --filename="https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/v$MULTUS_CNI_VERSION/deployments/multus-daemonset-thick-plugin.yml" --context "$context"

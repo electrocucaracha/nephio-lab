@@ -93,16 +93,11 @@ jobs:
     name: Check functional tests
     needs: check-scripts-format
     runs-on: ubuntu-20.04
-    env:
-      DEBUG: true
     steps:
       - uses: actions/checkout@v3.3.0
-      - name: Install dependencies
-        working-directory: ./scripts
-        run: ./install.sh
-      - name: Configure infrastructure
-        working-directory: ./scripts
-        run: ./configure.sh
       - name: Deploy Nephio services
         working-directory: ./scripts
-        run: ./deploy.sh
+        env:
+          DEBUG: true
+          ENABLE_FUNC_TEST: true
+        run: ./main.sh

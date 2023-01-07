@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
-# Copyright (c) 2022
+# Copyright (c) 2022,2023
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
@@ -13,11 +13,18 @@ set -o errexit
 set -o nounset
 set -o xtrace
 
+# shellcheck source=./scripts/_utils.sh
+source _utils.sh
+
 export DEBUG=true
 
-./install.sh
-./configure.sh
-./deploy.sh
+for step in install configure deploy; do
+    info "Running $step process"
+    bash "./$step.sh"
+    if [ "${ENABLE_FUNC_TEST:-false}" == "true" ]; then
+        bash "./${step}_test.sh"
+    fi
+done
 
 kubectl config use-context kind-nephio
 
