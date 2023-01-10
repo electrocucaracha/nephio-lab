@@ -54,11 +54,6 @@ function setup_sysctl {
     fi
 }
 
-if [ -f /etc/netplan/01-netcfg.yaml ] && ! grep -q '1.1.1.1, 8.8.8.8, 8.8.4.4' /etc/netplan/01-netcfg.yaml; then
-    sudo sed -i "s/addresses: .*/addresses: [1.1.1.1, 8.8.8.8, 8.8.4.4]/g" /etc/netplan/01-netcfg.yaml
-    sudo netplan apply
-fi
-
 # Install dependencies
 # NOTE: Shorten link -> https://github.com/electrocucaracha/pkg-mgr_scripts
 curl -fsSL http://bit.ly/install_pkg | PKG_COMMANDS_LIST="docker,kubectl,docker-compose" PKG="go-lang cni-plugins" bash
