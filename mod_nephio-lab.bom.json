@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.4",
-  "serialNumber": "urn:uuid:a851b373-5713-4b7b-a76d-2f9d03b0c3fd",
+  "serialNumber": "urn:uuid:d7b0fc29-39a3-4f89-8ef9-68524d7a022d",
   "version": 1,
   "metadata": {
-    "timestamp": "2022-10-14T10:05:13-07:00",
+    "timestamp": "2023-01-01T01:37:17Z",
     "tools": [
       {
         "vendor": "CycloneDX",
@@ -13,23 +13,23 @@
         "hashes": [
           {
             "alg": "MD5",
-            "content": "93c31d8f82dd2fb4321a1a414db976cf"
+            "content": "6458d398d3e01ab755c3ede9f57a3c4b"
           },
           {
             "alg": "SHA-1",
-            "content": "c52bc992238cf3447f6c7b8beef88ca948ab0fdc"
+            "content": "32950d74041ead50bbc9fdf052fc6f9ea1e6c91a"
           },
           {
             "alg": "SHA-256",
-            "content": "181fdbb5d8aa859efb8c54854b2b0b8fc2612da7806354a356e82492e5bfc457"
+            "content": "037b943225bc9e2c21dde829b7bf06c9707ab8755f34909d8db74094074489c7"
           },
           {
             "alg": "SHA-384",
-            "content": "de1023b4efeaac0c798ca04c6f4db08456175fecf513ec5da4ffddf08c5d5b8b1c8b961036a94e00a28a3fc61a927498"
+            "content": "ddebb579ed3fb1e83a88acf59887bdcc6ac0f8245a6e8881f1a9c876cdba05925ebaf88fe5e825b060d0f9c67b3b2b9c"
           },
           {
             "alg": "SHA-512",
-            "content": "ba0589038b86298435e0a564064e3d28fb322951613d21ecdb7d6d68ad0b807c584dac765ac0a9eb238fd76db9014c7437d1d3bb84e6e6c0dae7caf2a8326bb8"
+            "content": "a44e15ceda72df10de1669f037fa501cd8544977cfebaa3a38f8b175c7d735d721066a9e68220d3dd913ee10e12753b485d32c2806ef190fe1922a2d9287dcb8"
           }
         ],
         "externalReferences": [
@@ -45,11 +45,11 @@
       }
     ],
     "component": {
-      "bom-ref": "pkg:golang/github.com/electrocucaracha/nephio-lab@v0.0.0-20221014170352-736627ebb190?type=module",
+      "bom-ref": "pkg:golang/github.com/electrocucaracha/nephio-lab@v0.0.0-20221201014454-bd82ba64529e?type=module",
       "type": "application",
       "name": "github.com/electrocucaracha/nephio-lab",
-      "version": "v0.0.0-20221014170352-736627ebb190",
-      "purl": "pkg:golang/github.com/electrocucaracha/nephio-lab@v0.0.0-20221014170352-736627ebb190?type=module",
+      "version": "v0.0.0-20221201014454-bd82ba64529e",
+      "purl": "pkg:golang/github.com/electrocucaracha/nephio-lab@v0.0.0-20221201014454-bd82ba64529e?type=module",
       "externalReferences": [
         {
           "url": "https://github.com/electrocucaracha/nephio-lab",
@@ -537,7 +537,7 @@
   ],
   "dependencies": [
     {
-      "ref": "pkg:golang/github.com/electrocucaracha/nephio-lab@v0.0.0-20221014170352-736627ebb190?type=module",
+      "ref": "pkg:golang/github.com/electrocucaracha/nephio-lab@v0.0.0-20221201014454-bd82ba64529e?type=module",
       "dependsOn": [
         "pkg:golang/github.com/aojea/kind-networking-plugins@v0.0.0-20220224200338-2ee9dc2df338?type=module",
         "pkg:golang/github.com/pkg/errors@v0.9.1?type=module",
