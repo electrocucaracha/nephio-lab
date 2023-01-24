@@ -49,7 +49,9 @@ function install_webui {
     local nephio_webui_cluster_type=${NEPHIO_WEBUI_CLUSTER_TYPE:-NodePort}
 
     get_pkg "$path" "${nephio_url_base}webui"
-    # kpt fn eval "$path" --save --type mutator --match-kind="Service" --image gcr.io/kpt-fn/create-setters:v0.1.0 -- type=NodePort nodePort=30007
+    if [ "${CODESPACE_NAME-}" ]; then
+        sed -i "s|baseUrl: .*|baseUrl: https://$CODESPACE_NAME-7007.preview.app.github.dev|g" "${path}/config-map.yaml"
+    fi
     _install_pkg "$path"
     KUBE_EDITOR="sed -i \"s|type\: .*|type\: $nephio_webui_cluster_type|g\"" kubectl -n nephio-webui edit service nephio-webui
     [ "$nephio_webui_cluster_type" != "NodePort" ] || KUBE_EDITOR="sed -i \"s|nodePort\: .*|nodePort\: 30007|g\"" kubectl -n nephio-webui edit service nephio-webui
