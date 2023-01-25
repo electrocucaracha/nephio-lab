@@ -11,9 +11,7 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-if [[ ${DEBUG:-false} == "true" ]]; then
-    set -o xtrace
-fi
+[[ ${DEBUG:-false} != "true" ]] || set -o xtrace
 
 export gitea_default_password=secret
 export gitea_admin_account=gitea-admin
@@ -32,9 +30,7 @@ function _get_admin_token {
 
 function curl_gitea_api {
     curl_cmd="curl -s -H 'Authorization: token $(_get_admin_token)' -H 'content-type: application/json' http://localhost:3000/api/v1/$1"
-    if [ "${2-}" ]; then
-        curl_cmd+=" -k --data '$2'"
-    fi
+    [[ -z ${2-} ]] || curl_cmd+=" -k --data '$2'"
     eval "$curl_cmd"
 }
 

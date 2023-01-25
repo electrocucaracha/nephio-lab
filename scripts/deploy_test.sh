@@ -11,10 +11,7 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-if [[ ${DEBUG:-false} == "true" ]]; then
-    set -o xtrace
-    export PKG_DEBUG=true
-fi
+[[ ${DEBUG:-false} != "true" ]] || set -o xtrace
 
 # shellcheck source=./scripts/_assertions.sh
 source _assertions.sh

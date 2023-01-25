@@ -11,9 +11,7 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-if [[ ${DEBUG:-false} == "true" ]]; then
-    set -o xtrace
-fi
+[[ ${DEBUG:-false} != "true" ]] || set -o xtrace
 
 # debug() - This function prints a debug message in the standard output
 function debug {

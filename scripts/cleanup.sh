@@ -11,9 +11,7 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-if [[ ${DEBUG:-false} == "true" ]]; then
-    set -o xtrace
-fi
+[[ ${DEBUG:-false} != "true" ]] || set -o xtrace
 
 for container in $(sudo docker ps --quiet --all); do
     sudo docker kill "$container" >/dev/null || :

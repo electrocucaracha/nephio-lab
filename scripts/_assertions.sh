@@ -12,9 +12,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 DEBUG="${DEBUG:-false}"
-if [[ ${DEBUG} == "true" ]]; then
-    set -o xtrace
-fi
+[[ ${DEBUG} != "true" ]] || set -o xtrace
 
 # shellcheck source=scripts/_utils.sh
 source _utils.sh
@@ -24,12 +22,8 @@ function assert_non_empty {
     local input=$1
     local error_msg=$2
 
-    if [[ $DEBUG == "true" ]]; then
-        debug "NonEmpty Assertion - value: $1"
-    fi
-    if [ -z "$input" ]; then
-        error "$error_msg"
-    fi
+    [[ ${DEBUG} != "true" ]] || debug "NonEmpty Assertion - value: $1"
+    [[ -n $input ]] || error "$error_msg"
 }
 
 # assert_are_equal() - This assertion checks if the inputs are equal
@@ -38,26 +32,8 @@ function assert_are_equal {
     local expected=$2
     local error_msg=${3:-"got $input, want $expected"}
 
-    if [[ $DEBUG == "true" ]]; then
-        debug "Are equal Assertion - value: $1 expected: $2"
-    fi
-    if [ "$input" != "$expected" ]; then
-        error "$error_msg"
-    fi
-}
-
-# assert_are_not_equal() - This assertion checks if the inputs are not equal
-function assert_are_not_equal {
-    local input=$1
-    local expected=$2
-    local error_msg=$3
-
-    if [[ $DEBUG == "true" ]]; then
-        debug "Are not equal Assertion - value: $1 expected: $2"
-    fi
-    if [ "$input" == "$expected" ]; then
-        error "$error_msg"
-    fi
+    [[ ${DEBUG} != "true" ]] || debug "Are equal Assertion - value: $1 expected: $2"
+    [[ $input == "$expected" ]] || error "$error_msg"
 }
 
 # assert_contains() - This assertion checks if the input contains another value
@@ -66,10 +42,6 @@ function assert_contains {
     local expected=$2
     local error_msg=${3:-"$input doesn't contains $expected"}
 
-    if [[ $DEBUG == "true" ]]; then
-        debug "Contains Assertion - value: $1 expected: $2"
-    fi
-    if [[ $input != *"$expected"* ]]; then
-        error "$error_msg"
-    fi
+    [[ ${DEBUG} != "true" ]] || debug "Contains Assertion - value: $1 expected: $2"
+    [[ $input == *"$expected"* ]] || error "$error_msg"
 }

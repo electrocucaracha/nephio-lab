@@ -11,26 +11,17 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-if [[ ${DEBUG:-false} == "true" ]]; then
-    set -o xtrace
-    export PKG_DEBUG=true
-fi
+[[ ${DEBUG:-false} != "true" ]] || set -o xtrace
 
 # shellcheck source=./scripts/_assertions.sh
 source _assertions.sh
-
-export PKG_KREW_PLUGINS_LIST=" "
 
 function _assert_cmd_exists {
     local cmd="$1"
     local error_msg="${2:-"$cmd command doesn't exist"}"
 
-    if [[ $DEBUG == "true" ]]; then
-        debug "Command $cmd assertion validation"
-    fi
-    if ! command -v "$cmd" >/dev/null; then
-        error "$error_msg"
-    fi
+    [[ ${DEBUG} != "true" ]] || debug "Command $cmd assertion validation"
+    command -v "$cmd" >/dev/null || error "$error_msg"
 }
 
 function _assert_inotify_maxs {
@@ -40,6 +31,9 @@ function _assert_inotify_maxs {
     assert_contains "$(sudo sysctl sysctl --all)" "fs.inotify.max_user_$var"
     assert_are_equal "$(sudo sysctl sysctl --values "fs.inotify.max_user_$var" 2>/dev/null)" "$val"
 }
+
+# shellcheck disable=SC1091
+[ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
 
 info "Assert command requirements"
 for cmd in docker kubectl docker-compose go kpt; do

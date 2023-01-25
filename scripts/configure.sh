@@ -11,15 +11,14 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-if [[ ${DEBUG:-false} == "true" ]]; then
-    set -o xtrace
-fi
+[[ ${DEBUG:-false} != "true" ]] || set -o xtrace
 
 # shellcheck source=scripts/_common.sh
 source _common.sh
-
-MULTUS_CNI_VERSION=3.9.2
-METALLB_VERSION=0.13.7
+# shellcheck source=./scripts/_utils.sh
+source _utils.sh
+# shellcheck source=./scripts/defaults.env
+source defaults.env
 
 trap get_status ERR
 
@@ -36,9 +35,7 @@ function _create_user {
     if ! echo "$user_list" | grep -q "$1"; then
         user_create_cmd=(admin user create --username "$1" --password
             "$gitea_default_password" --access-token --email "$1@nephio.io")
-        if [ "${2:-false}" == "true" ]; then
-            user_create_cmd+=(--admin)
-        fi
+        [[ ${2:-false} != "true" ]] || user_create_cmd+=(--admin)
         exec_gitea "${user_create_cmd[@]}"
     fi
 }
@@ -48,10 +45,7 @@ function _wait_gitea_services {
     for svc in $(sudo docker-compose ps -aq); do
         attempt_counter=0
         until [ "$(sudo docker inspect "$svc" --format='{{.State.Health.Status}}')" == "healthy" ]; do
-            if [ ${attempt_counter} -eq ${max_attempts} ]; then
-                echo "Max attempts reached for waiting to gitea containers"
-                exit 1
-            fi
+            [[ ${attempt_counter} -ne ${max_attempts} ]] || error "Max attempts reached for waiting to gitea containers"
             attempt_counter=$((attempt_counter + 1))
             sleep $((attempt_counter * 5))
         done
@@ -59,19 +53,14 @@ function _wait_gitea_services {
 
     attempt_counter=0
     until curl -s http://localhost:3000/api/swagger; do
-        if [ ${attempt_counter} -eq ${max_attempts} ]; then
-            echo "Max attempts reached for waiting for gitea API"
-            exit 1
-        fi
+        [[ ${attempt_counter} -ne ${max_attempts} ]] || error "Max attempts reached for waiting for gitea API"
         attempt_counter=$((attempt_counter + 1))
         sleep $((attempt_counter * 5))
     done
 }
 
 # Multi-cluster configuration
-if [ -z "$(sudo docker images wanem:0.0.1 -q)" ]; then
-    sudo docker build -t wanem:0.0.1 .
-fi
+[[ -n "$(sudo docker images wanem:0.0.1 -q)" ]] || sudo docker build -t wanem:0.0.1 .
 if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
     # shellcheck disable=SC1091
     [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh

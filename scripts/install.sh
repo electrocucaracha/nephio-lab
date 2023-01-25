@@ -16,28 +16,12 @@ if [[ ${DEBUG:-false} == "true" ]]; then
     export PKG_DEBUG=true
 fi
 
+# shellcheck source=./scripts/_utils.sh
+source _utils.sh
+# shellcheck source=./scripts/defaults.env
+source defaults.env
+
 export PKG_KREW_PLUGINS_LIST=" "
-
-function get_github_latest_tag {
-    version=""
-    attempt_counter=0
-    max_attempts=5
-
-    until [ "$version" ]; do
-        tags="$(curl -s "https://api.github.com/repos/$1/tags")"
-        if [ "$tags" ]; then
-            version="$(echo "$tags" | grep -Po '"name":.*?[^\\]",' | awk -F '"' 'NR==1{print $4}')"
-            break
-        elif [ ${attempt_counter} -eq ${max_attempts} ]; then
-            echo "Max attempts reached"
-            exit 1
-        fi
-        attempt_counter=$((attempt_counter + 1))
-        sleep $((attempt_counter * 2))
-    done
-
-    echo "${version#*v}"
-}
 
 function setup_sysctl {
     local key="$1"
@@ -59,7 +43,7 @@ function setup_sysctl {
 curl -fsSL http://bit.ly/install_pkg | PKG_COMMANDS_LIST="docker,kubectl,docker-compose" PKG="go-lang cni-plugins" bash
 
 if ! command -v kpt >/dev/null; then
-    curl -s "https://i.jpillora.com/GoogleContainerTools/kpt@v$(get_github_latest_tag GoogleContainerTools/kpt)!!" | bash
+    curl -s "https://i.jpillora.com/GoogleContainerTools/kpt@v${KPT_VERSION}!" | bash
     kpt completion bash | sudo tee /etc/bash_completion.d/kpt >/dev/null
 fi
 

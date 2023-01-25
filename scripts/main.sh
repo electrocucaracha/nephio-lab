@@ -21,9 +21,7 @@ export DEBUG=true
 for step in install configure deploy; do
     info "Running $step process"
     bash "./$step.sh"
-    if [ "${ENABLE_FUNC_TEST:-false}" == "true" ]; then
-        bash "./${step}_test.sh"
-    fi
+    [[ ${ENABLE_FUNC_TEST:-false} != "true" ]] || bash "./${step}_test.sh"
 done
 
 kubectl config use-context kind-nephio
