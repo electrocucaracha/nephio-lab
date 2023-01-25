@@ -39,7 +39,7 @@ Vagrant.configure('2') do |config|
   config.vm.network 'forwarded_port', guest: 3000, guest_ip: '127.0.0.1', host: 3000
 
   # Initial setup
-  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+  config.vm.provision 'shell', privileged: false, inline: <<-SHELL
     if [ -f /etc/netplan/01-netcfg.yaml ] && ! grep -q '1.1.1.1, 8.8.8.8, 8.8.4.4' /etc/netplan/01-netcfg.yaml; then
         sudo sed -i "s/addresses: .*/addresses: [1.1.1.1, 8.8.8.8, 8.8.4.4]/g" /etc/netplan/01-netcfg.yaml
         sudo netplan apply
@@ -50,10 +50,10 @@ Vagrant.configure('2') do |config|
   SHELL
 
   # Install dependencies
-  config.vm.provision 'shell', privileged: false, path: './scripts/install.sh', reset: true
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
       DEBUG: ENV.fetch('DEBUG', true),
+      ENABLE_FUNC_TEST: ENV['ENABLE_FUNC_TEST'],
       NEPHIO_WEBUI_CLUSTER_TYPE: ENV.fetch('NEPHIO_WEBUI_CLUSTER_TYPE', 'LoadBalancer')
     }
     sh.inline = <<-SHELL
