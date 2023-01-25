@@ -106,6 +106,7 @@ topo
 ue
 uePool
 ui
+upd
 upf
 UPFClass
 upfClassName

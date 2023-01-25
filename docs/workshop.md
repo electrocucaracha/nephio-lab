@@ -110,7 +110,7 @@ function configuration.  Right now, only the UPF portion is working.
 kubectl apply -f scripts/resources/FiveGCoreTopology.yml --context kind-nephio
 ```
 
-What does the system do with this resources?
+What does the system do with this resource?
 
 1. It generates a `PackageDeployment` resource to fan out the
    `free5gc-upf` package across the edge clusters, by following the
@@ -122,7 +122,7 @@ What does the system do with this resources?
    can see in the *Conditions* tab of a free5gc-upf package instantiated by this
    process.
 4. The `UPFDeployment` cannot be injected by the package deployment controller,
-   but instead needs another controller, the *nf injector controller* to create
+   but instead needs another controller, the [*nf injector controller*][1] to create
    it. That controller will see the `false` condition of the
    `UPFDeployment` condition type, and it will use the UPF configuration
    information from the `FiveGCoreTopology` resource, along with information
@@ -131,12 +131,12 @@ What does the system do with this resources?
    Instead, it will generate new, local config resources of type
    `IPAMAllocation`, and associated package conditions set to `false`.
 5. The *IPAM injector* will see these new package conditions, and will use the
-   information in them to request IP addresses from the *IPAM controller*,
+   information in them to request IP addresses from the [*IPAM controller*][2],
    storing those IPs back into the *status* field of the `IPAMAllocation`.
-6. A kpt function, *nephio-ipam-upf-fn*, that is included in the *Kptfile*'s
+6. A kpt function, [*nephio-upd-ipam-fn*][3], that is included in the *Kptfile*'s
    pipeline, will copy the IP addresses from the *status* to the right places in
    the `UPFDeployment`.
-7. Another kpt function, *nad-inject-fn*, will generate the Multus
+7. Another kpt function, [*nad-inject-fn*][4], will generate the Multus
    `NetworkAttachmentDefinition` resources using information from the
    `IPAMAllocation` resources.
 
@@ -156,3 +156,8 @@ that the operator has created the associated `ConfigMap` and `Deployment`:
 ```bash
 kubectl get deploy,cm,network-attachment-definition,upfdeployment,po --namespace upf --context kind-edge-1
 ```
+
+[1]: https://github.com/henderiw-nephio/nf-injector-controller
+[2]: https://github.com/henderiw-nephio/ipam
+[3]: https://github.com/henderiw-kpt/nephio-upf-ipam-fn
+[4]: https://github.com/henderiw-nephio/nad-inject-fn
