@@ -17,6 +17,7 @@ export gitea_default_password=secret
 export gitea_admin_account=gitea-admin
 export nephio_gitea_org=nephio-playground
 export nephio_gitea_repos=(catalog regional edge-1 edge-2)
+export gitea_cache_tokens_base_dir="/tmp/gitea_tokens"
 
 function exec_gitea {
     sudo docker exec --user git "$(sudo docker ps --filter \
@@ -24,8 +25,13 @@ function exec_gitea {
 }
 
 function _get_admin_token {
-    exec_gitea admin user generate-access-token --username \
-        "$gitea_admin_account" | awk -F ':' '{ print $2}'
+    if [ ! -f "$gitea_cache_tokens_base_dir/$gitea_admin_account" ]; then
+        mkdir -p "$gitea_cache_tokens_base_dir"
+        token="$(exec_gitea admin user generate-access-token --username "$gitea_admin_account" | awk -F ':' '{ print $2}')"
+        echo "$token" >"$gitea_cache_tokens_base_dir/$gitea_admin_account"
+    else
+        cat "$gitea_cache_tokens_base_dir/$gitea_admin_account"
+    fi
 }
 
 function curl_gitea_api {

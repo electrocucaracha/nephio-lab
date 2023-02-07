@@ -36,7 +36,9 @@ function _create_user {
         user_create_cmd=(admin user create --username "$1" --password
             "$gitea_default_password" --access-token --email "$1@nephio.io")
         [[ ${2:-false} != "true" ]] || user_create_cmd+=(--admin)
-        exec_gitea "${user_create_cmd[@]}"
+        token=$(exec_gitea "${user_create_cmd[@]}" | awk 'FNR == 1 {print $NF}')
+        mkdir -p "$gitea_cache_tokens_base_dir"
+        echo "$token" >"$gitea_cache_tokens_base_dir/$1"
     fi
 }
 

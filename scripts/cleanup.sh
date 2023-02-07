@@ -27,3 +27,4 @@ for vol in $(sudo docker volume list --quiet); do
 done
 
 sudo rm -rf /opt/nephio
+sudo rm -rf /tmp/gitea_tokens
