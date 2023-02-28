@@ -36,7 +36,7 @@ function _assert_inotify_maxs {
 [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
 
 info "Assert command requirements"
-for cmd in docker kubectl docker-compose go kpt; do
+for cmd in docker kubectl docker-compose go kpt multicluster; do
     _assert_cmd_exists "$cmd"
 done
 

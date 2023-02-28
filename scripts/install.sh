@@ -47,6 +47,12 @@ if ! command -v kpt >/dev/null; then
     kpt completion bash | sudo tee /etc/bash_completion.d/kpt >/dev/null
 fi
 
+if ! command -v multicluster >/dev/null; then
+    # shellcheck disable=SC1091
+    [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
+    GOBIN=/usr/local/bin/ sudo -E "$(command -v go)" install github.com/electrocucaracha/multi-cluster/cmd/multicluster@latest
+fi
+
 # Increase inotify resources
 setup_sysctl "fs.inotify.max_user_watches" "524288"
 setup_sysctl "fs.inotify.max_user_instances" "512"

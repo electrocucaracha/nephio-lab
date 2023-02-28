@@ -62,11 +62,6 @@ function _wait_gitea_services {
 }
 
 # Multi-cluster configuration
-if ! command -v multicluster; then
-    # shellcheck disable=SC1091
-    [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
-    GOBIN=/usr/local/bin/ sudo -E "$(command -v go)" install github.com/electrocucaracha/multi-cluster/cmd/multicluster@latest
-fi
 if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
     sudo multicluster create --config ./config.yml --name nephio
     mkdir -p "$HOME/.kube"
