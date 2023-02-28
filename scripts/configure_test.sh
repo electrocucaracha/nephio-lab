@@ -19,7 +19,7 @@ source _assertions.sh
 source _common.sh
 
 info "Assert WAN emulator image creation"
-assert_non_empty "$(sudo docker images --filter reference=wanem --quiet)" "There is no WAN emulator Docker image created"
+assert_non_empty "$(sudo docker images --filter reference=electrocucaracha/wanem --quiet)" "There is no WAN emulator Docker image created"
 
 info "Assert KinD clusters creation"
 assert_non_empty "$(sudo docker ps --filter label=io.x-k8s.kind.role=control-plane --quiet)" "There are no KinD clusters running"

@@ -62,13 +62,17 @@ function _wait_gitea_services {
 }
 
 # Multi-cluster configuration
-[[ -n "$(sudo docker images wanem:0.0.1 -q)" ]] || sudo docker build -t wanem:0.0.1 .
-if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
+if ! command -v multicluster; then
     # shellcheck disable=SC1091
     [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
-    sudo -E "$(command -v go)" run ../... create --config ./config.yml --name nephio
+    GOBIN=/usr/local/bin/ sudo -E "$(command -v go)" install github.com/electrocucaracha/multi-cluster/cmd/multicluster@latest
+fi
+if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
+    sudo multicluster create --config ./config.yml --name nephio
     mkdir -p "$HOME/.kube"
-    sudo chown -R "$USER" "$HOME/.kube/"
+    sudo cp /root/.kube/config "$HOME/.kube/config"
+    sudo chown -R "$USER": "$HOME/.kube"
+    chmod 600 "$HOME/.kube/config"
 fi
 
 # Gitea configuration

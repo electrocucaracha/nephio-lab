@@ -24,6 +24,5 @@ lint:
 
 .PHONY: fmt
 fmt:
-	@go fmt ./...
 	sudo -E $(DOCKER_CMD) run --rm -u "$$(id -u):$$(id -g)" \
 	-v "$$(pwd):/mnt" -w /mnt mvdan/shfmt -l -w -i 4 -s .

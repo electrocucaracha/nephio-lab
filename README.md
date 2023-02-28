@@ -3,15 +3,13 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub Super-Linter](https://github.com/electrocucaracha/nephio-lab/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
-[![Go Report Card](https://goreportcard.com/badge/github.com/electrocucaracha/nephio-lab)](https://goreportcard.com/report/github.com/electrocucaracha/nephio-lab)
-[![GoDoc](https://godoc.org/github.com/electrocucaracha/nephio-lab?status.svg)](https://godoc.org/github.com/electrocucaracha/nephio-lab)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=electrocucaracha.nephio-lab)
 
 The goal of this project is to provision a self-contained environment for the
 [Nephio][1] [Workshop][2] hosted during the ONE Summit 2022. The
 [post create command script](./scripts/main.sh) installs
-dependencies and configures Nephio services, it uses the [KinD API][3] to
-deploy several Kubernetes clusters locally and [Gitea][4] as software package
+dependencies and configures Nephio services, it uses the [Multi-Cluster tool][3]
+to deploy several Kubernetes clusters locally and [Gitea][4] as software package
 hosting service. Nephio UI consumes [Backstage][5] project and local ports are
 forwarded as follows:
 
@@ -82,7 +80,7 @@ The following diagram shows the result after its execution.
 
 [1]: https://nephio.org/
 [2]: https://github.com/nephio-project/one-summit-22-workshop/
-[3]: https://kind.sigs.k8s.io/
+[3]: https://github.com/electrocucaracha/multi-cluster
 [4]: https://gitea.io/
 [5]: https://backstage.io/
 [6]: https://www.vagrantup.com/

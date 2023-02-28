@@ -21,33 +21,14 @@ on:
       - submitted
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
+  check-scripts-format:
     if: >-
       (
         github.event_name == 'pull_request_review' &&
         github.event.review.state == 'approved'
       ) ||
       github.event_name != 'pull_request_review'
-    outputs:
-      scripts: ${{ steps.filter.outputs.scripts }}
-      golang: ${{ steps.filter.outputs.golang }}
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - uses: dorny/paths-filter@v2.11.1
-        if: ${{ !env.ACT }}
-        id: filter
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filters: |
-            scripts:
-              - '**.sh'
-            golang:
-              - '**.go'
-  check-scripts-format:
     name: Check scripts format
-    if: needs.changes.outputs.scripts == 'true'
-    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.3.0
@@ -58,37 +39,6 @@ jobs:
           SHFMT_OPTS: -i 4 -s
         with:
           sh_checker_shellcheck_disable: true
-  unit-test:
-    name: Check Go lang unit tests
-    if: needs.changes.outputs.golang == 'true'
-    needs: changes
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - uses: actions/setup-go@v3.5.0
-        with:
-          go-version: '^1.19'
-      - uses: actions/cache@v3.2.6
-        if: ${{ !env.ACT }}
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - uses: GoTestTools/gotestfmt-action@v2.1.0
-      - name: Run tests
-        run: |
-          set -euo pipefail
-          go test -json -v ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
-      - name: Upload test log
-        uses: actions/upload-artifact@v3.1.2
-        if: ${{ !env.ACT }}
-        with:
-          name: test-log
-          path: /tmp/gotest.log
-          if-no-files-found: error
   functional-test:
     name: Check functional tests
     needs: check-scripts-format
