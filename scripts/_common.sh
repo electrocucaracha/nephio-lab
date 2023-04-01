@@ -21,14 +21,14 @@ export gitea_cache_tokens_base_dir="/tmp/gitea_tokens"
 
 function exec_gitea {
     sudo docker exec --user git "$(sudo docker ps --filter \
-        ancestor=gitea/gitea:1.18-dev -q)" /app/gitea/gitea "$@"
+        ancestor=gitea/gitea:1.19.0 -q)" /app/gitea/gitea "$@"
 }
 
 function _get_admin_token {
     if [ ! -f "$gitea_cache_tokens_base_dir/$gitea_admin_account" ]; then
         mkdir -p "$gitea_cache_tokens_base_dir"
-        token="$(exec_gitea admin user generate-access-token --username "$gitea_admin_account" | awk -F ':' '{ print $2}')"
-        echo "$token" >"$gitea_cache_tokens_base_dir/$gitea_admin_account"
+        token="$(exec_gitea admin user generate-access-token --username "$gitea_admin_account" --scopes write:org,admin:org | awk -F ':' '{ print $2}')"
+        echo "$token" | tee "$gitea_cache_tokens_base_dir/$gitea_admin_account"
     else
         cat "$gitea_cache_tokens_base_dir/$gitea_admin_account"
     fi
