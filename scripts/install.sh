@@ -47,16 +47,13 @@ if ! command -v kpt >/dev/null; then
     kpt completion bash | sudo tee /etc/bash_completion.d/kpt >/dev/null
 fi
 
-if ! command -v multicluster >/dev/null; then
-    # shellcheck disable=SC1091
-    [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
-    GOBIN=/usr/local/bin/ sudo -E "$(command -v go)" install github.com/electrocucaracha/multi-cluster/cmd/multicluster@latest
-fi
-if ! command -v nephioadm >/dev/null; then
-    # shellcheck disable=SC1091
-    [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
-    GOBIN=/usr/local/bin/ sudo -E "$(command -v go)" install github.com/electrocucaracha/nephioadm/cmd/nephioadm@latest
-fi
+# shellcheck disable=SC1091
+[ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
+for cmd in multicluster nephioadm; do
+    if ! command -v "$cmd" >/dev/null; then
+        GOBIN=/usr/local/bin/ sudo -E "$(command -v go)" install "github.com/electrocucaracha/$cmd/cmd/$cmd@latest"
+    fi
+done
 
 # Increase inotify resources
 setup_sysctl "fs.inotify.max_user_watches" "524288"
