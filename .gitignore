@@ -1,3 +1,5 @@
 .vagrant/
 *.log
 *.dic
+scripts/clab-nephio-lab/
+scripts/.topo.yml.bak

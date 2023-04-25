@@ -47,6 +47,11 @@ if ! command -v kpt >/dev/null; then
     kpt completion bash | sudo tee /etc/bash_completion.d/kpt >/dev/null
 fi
 
+if ! command -v clab >/dev/null; then
+    curl -fsSL https://get.containerlab.dev | bash
+    clab completion bash | sudo tee /etc/bash_completion.d/clab >/dev/null
+fi
+
 # shellcheck disable=SC1091
 [ -f /etc/profile.d/path.sh ] && source /etc/profile.d/path.sh
 for cmd in multicluster nephioadm; do

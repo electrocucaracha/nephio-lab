@@ -66,6 +66,8 @@ if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
     sudo cp /root/.kube/config "$HOME/.kube/config"
     sudo chown -R "$USER": "$HOME/.kube"
     chmod 600 "$HOME/.kube/config"
+    sudo clab deploy --topo ./topo.yml --skip-post-deploy
+    sleep 30
 fi
 
 # Gitea configuration
