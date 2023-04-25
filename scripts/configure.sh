@@ -61,7 +61,7 @@ function _wait_gitea_services {
 
 # Multi-cluster configuration
 if ! sudo docker ps --format "{{.Image}}" | grep -q "kindest/node"; then
-    sudo multicluster create --config ./config.yml --name nephio
+    sudo multicluster create --config ./config.yml
     mkdir -p "$HOME/.kube"
     sudo cp /root/.kube/config "$HOME/.kube/config"
     sudo chown -R "$USER": "$HOME/.kube"
