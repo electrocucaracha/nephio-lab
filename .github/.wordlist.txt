@@ -59,6 +59,7 @@ kube
 kubeconfig
 kubectl
 kubernetes
+laobi
 Libvirt
 lifecycle
 linter

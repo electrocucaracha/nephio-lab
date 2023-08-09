@@ -3,7 +3,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub Super-Linter](https://github.com/electrocucaracha/nephio-lab/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
-![visitors](https://visitor-badge.glitch.me/badge?page_id=electrocucaracha.nephio-lab)
+<!-- markdown-link-check-disable-next-line -->
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=electrocucaracha.nephio-lab)
 
 The goal of this project is to provision a self-contained environment for the
 [Nephio][1] [Workshop][2] hosted during the ONE Summit 2022. The
