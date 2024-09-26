@@ -31,7 +31,7 @@ jobs:
     name: Check scripts format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.0
       - name: Run the sh-checker
         uses: luizm/action-sh-checker@v0.9.0
         env:
@@ -44,7 +44,7 @@ jobs:
     needs: check-scripts-format
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.0
       - uses: actions/setup-go@v5.0.2
         with:
           go-version: '^1.20'
