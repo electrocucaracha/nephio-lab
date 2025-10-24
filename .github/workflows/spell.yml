@@ -24,14 +24,14 @@ jobs:
     name: Check spelling (reviewdog)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: reviewdog/action-misspell@v1.26.3
+      - uses: actions/checkout@v5.0.0
+      - uses: reviewdog/action-misspell@v1.27.0
         with:
           github_token: ${{ secrets.github_token }}
   check-spellcheck:
     name: Check spelling (pyspelling)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: igsekor/pyspelling-any@v1.0.5
         name: Spellcheck
